@@ -35,3 +35,4 @@ nosetests.xml
 .pydevproject
 
 file.db
+example.library_publish.toml
