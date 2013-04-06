@@ -27,16 +27,6 @@ class Library(Base):
         """
         return session.query(cls).get(identity)
 
-    @classmethod
-    def query(cls, identity, query):
-        library = Library.get(identity)
-        return library.execute_query(query)
-
-    @classmethod
-    def finish_publish(cls, identity, url, size, hash, metadata=ALL_DATA):
-        library = Library.get(identity)
-        library.add_item(url, size, hash, metadata)
-
     def get_storage(self, size):
         if self.s3_engine:
             return self.s3_engine
@@ -64,15 +54,6 @@ class Item(Base):
     url = Column(String)
     license = Column(String)
     origin = Column(String)
-
-    @classmethod
-    def start_publish(cls, identity, size, hash):
-        """
-        Based on the size and hash, determine which storage engine should get this
-        new upload.
-        """
-        library = Library.get(identity)
-        return library.get_storage(size)
 
     def __repr__(self):
         return "[%i %s]" % (self.size, self.hash)
