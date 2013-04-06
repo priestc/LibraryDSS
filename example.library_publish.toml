@@ -1,0 +1,8 @@
+[client.library]
+url = "http://localhost:5000"
+identity = "chris"
+
+[server.amazon_aws]
+access_key = "AKIAJZFWR2UWSFJ6YXUQ"
+secret_access_key = "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"
+bucket_name = "library_chrispriest"
