@@ -59,6 +59,8 @@ class Item(Base):
     library_identity = Column(ForeignKey("giotto_library.identity"))
     size = Column(Integer)
     hash = Column(String, primary_key=True)
+    date_published = Column(DateTime)
+    date_created = Column(DateTime)
     url = Column(String)
     license = Column(String)
     origin = Column(String)
@@ -130,14 +132,6 @@ class GoogleDriveEngine(Base):
     def __repr__(self):
         return "Drive: %s" % self.library_identity
 
-
-def dummy_data():
-    """For local testing"""
-    l = Library(identity='chris', password='chris')
-    e = S3Engine(access_key='AKIAJZFWR2UWSFJ6YXUQ', secret_key="4ga10/OerrcqGtVq1XrU6ETqVjl8ifXYOgejh4uW", bucket_name="library_chrispriest", library_identity='chris')
-    session.add(l)
-    session.add(e)
-    session.commit()
 
 def configure():
     """
