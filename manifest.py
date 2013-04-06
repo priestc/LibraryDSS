@@ -5,20 +5,25 @@ from giotto.views import GiottoView, BasicView, jinja_template
 from models import Item, Library, configure
 from views import ForceJSONView
 from client import publish
+from server import finish_publish, start_publish, query
+
+def test_wrapper():
+    from test import functional_test
+    functional_test()
 
 manifest = ProgramManifest({
     'startPublish': GiottoProgram(
         controller=['http-post'],
-        model=[Item.start_publish, {"name": "s3", 'access_key': 'AKIAJZFWR2UWSFJ6YXUQ', "secret_key": "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", "bucket_name": "library_chrispriest"}],
+        model=[start_publish],
         view=ForceJSONView,
     ),
     'completePublish': GiottoProgram(
         controller=['http-post'],
-        model=[Library.finish_publish, "OK"],
+        model=[finish_publish, "OK"],
         view=BasicView,
     ),
     'query': GiottoProgram(
-        model=[Library.query],
+        model=[query],
         view=BasicView,
     ),
     'configure': GiottoProgram(
@@ -33,4 +38,8 @@ manifest = ProgramManifest({
         view=BasicView,
     ),
     'mgt': management_manifest,
+    'test': GiottoProgram(
+        model=[test_wrapper],
+        view=BasicView
+    ),
 })

@@ -2,7 +2,6 @@ import json
 import hashlib
 import os
 
-from giotto.primitives import ALL_DATA
 from giotto import get_config
 
 Base = get_config('Base')
@@ -27,20 +26,39 @@ class Library(Base):
         """
         return session.query(cls).get(identity)
 
+    def has(self, size=None, hash=None):
+        return any(x for x in self.items if x.hash == hash and x.size == size)
+
     def get_storage(self, size):
         if self.s3_engine:
             return self.s3_engine
         if self.googledrive_engine:
             return self.googledrive_engine
 
+    def add_storage(self, engine, details):
+        if engine == 's3':
+            Engine = S3Engine
+
+        if engine == 'googledrive':
+            Engine = GoogleDriveEngine
+
+        e = Engine(library=self, **details)
+        session.add(e)
+
     def execute_query(self, query):
         return []
 
-    def add_item(self, url, size, hash, metadata):
+    def add_item(self, date_created, url, size, hash, metadata):
         """
         Import a new item into the Library.
         """
-        i = Item(url=url, library_identity=self.identity, size=size, hash=hash)
+        i = Item(
+            url=url,
+            library=self,
+            size=size,
+            date_created=date_created,
+            hash=hash,
+        )
         i.set_metadata(metadata)
         session.add(i)
         session.commit()
