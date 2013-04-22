@@ -1,6 +1,6 @@
 import httplib2
 
-from models import Library, GoogleDriveEngine
+from models import Library, UploadEngine
 from giotto.primitives import ALL_DATA, USER, LOGGED_IN_USER
 from giotto import get_config
 
@@ -48,7 +48,7 @@ def settings(identity):
         'identity': identity,
         'google_drive': google_drive,
         's3_engine': s3_engine,
-    }    
+    }
 
 def connect_google_api(code, all=ALL_DATA, user=LOGGED_IN_USER):
     """
@@ -60,7 +60,7 @@ def connect_google_api(code, all=ALL_DATA, user=LOGGED_IN_USER):
     flow = get_flow()
     credentials = flow.step2_exchange(code)
 
-    engine = GoogleDriveEngine(name="drive", credentials=credentials, library=library)
+    engine = UploadEngine(name="googledrive", google_credentials=credentials, library=library)
     session = get_config('session')
     session.add(engine)
     session.commit()

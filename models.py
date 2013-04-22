@@ -3,6 +3,7 @@ import base64
 import pickle
 import json
 import hashlib
+import random
 import os
 
 from giotto import get_config
@@ -39,19 +40,16 @@ class Library(Base):
         return len(items.all()) > 0
 
     def get_storage(self, size):
-        if self.s3_engine:
-            return self.s3_engine
-        if self.googledrive_engine:
-            return self.googledrive_engine
+        return random.choice(self.engines)
 
-    def add_storage(self, engine, name, details):
-        if engine == 's3':
-            Engine = S3Engine
-        elif engine == 'googledrive':
-            Engine = GoogleDriveEngine
-
-        e = Engine(library=self, name=name, **details)
+    def add_storage(self, engine, connection_data):
+        if engine == 'googledrive':
+            e = UploadEngine(library=self, name=engine, google_credentials=connection_data)
+        else:
+            e = UploadEngine(library=self, name=engine, connection_data=connection_data)
         session.add(e)
+        session.commit()
+        return e
 
     def execute_query(self, **query):
         # all metadata pairs for all items in this library.
@@ -66,11 +64,12 @@ class Library(Base):
         #print "after: ", items.all()
         return items.all()
 
-    def add_item(self, date_created, url, size, hash, mimetype, metadata, license='restricted'):
+    def add_item(self, engine, date_created, url, size, hash, mimetype, metadata, license='restricted'):
         """
         Import a new item into the Library.
         """
         i = Item(
+            engine=engine,
             url=url,
             library=self,
             size=size,
@@ -95,6 +94,8 @@ class Item(Base):
     url = Column(String, nullable=False)
     license = Column(String, nullable=False)
     origin = Column(String, nullable=False)
+    engine_id = Column(ForeignKey("giotto_uploadengine.id"))
+    engine = relationship('UploadEngine')
 
     def __repr__(self):
         return "[%i#%s %s]" % (self.size, self.hash, self.mimetype)
@@ -127,45 +128,47 @@ class MetaData(Base):
         return "%s %s=%s" % (self.item, self.key, self.value)
 
 
-class S3Engine(Base):
+class UploadEngine(Base):
+    id = Column(Integer, primary_key=True)
     library_identity = Column(ForeignKey("giotto_library.identity"))
-    library = relationship("Library", backref="s3_engine")
-    name = Column(String, nullable=False) # TODO: add unique contraint for name + identity
-    bucket_name = Column(String, primary_key=True)
-    secret_key = Column(String)
-    access_key = Column(String)
+    library = relationship("Library", backref="engines")
+    name = Column(String, nullable=False)
+    connection_data = Column(String) # json encoded
 
     def todict(self):
-        return {
-            'access_key': self.access_key,
-            'secret_key': self.secret_key,
-            'bucket_name': self.bucket_name,
-            'name': 's3',
-        }
+        connection_data = json.loads(self.connection_data)
+
+        if self.name == 'googledrive':
+            credentials = connection_data['credentials']
+            unencoded = pickle.loads(base64.b64decode(credentials))
+            connection_data['credentials'] = unencoded
+
+        return {'name': self.name, 'data': connection_data}
 
     def __repr__(self):
-        return "S3: %s" % self.library_identity
+        return "Engine: %s %s" % (self.name, self.library_identity)
 
-class GoogleDriveEngine(Base):
-    library_identity = Column(ForeignKey("giotto_library.identity"))
-    library = relationship("Library", backref="googledrive_engine")
-    name = Column(String, nullable=False) # TODO: add unique contraint for name + identity
-    credentials = Column(String, primary_key=True)
-
-    def __init__(self, *a, **kwargs):
+    def get_total_size(self):
         """
-        Automatically pickle and b64encode the credentials object.
+        The total bytes of all files stored in this engine. Does not call the
+        engine API, just goes by the local database.
         """
-        kwargs['credentials'] = base64.b64encode(pickle.dumps(kwargs['credentials']))
-        super(GoogleDriveEngine, self).__init__(*a, **kwargs)
+        items = session.query(Item).filter_by(engine_id=self.id).all()
+        return sum(x.size for x in items)
 
-    def todict(self):
-        credentials = pickle.loads(base64.b64decode(self.credentials))
-        return {"credentials": credentials, "name": "googledrive"}
+    def __init__(self, *args, **kwargs):
+        """
+        Turn the connection_data arg into json. You must pass in only serializable
+        data. Also, automatically pickle and b64encode google credentials objects.
+        """
+        gc = kwargs.pop('google_credentials', None)
+        if gc:
+            encoded = {'credentials': base64.b64encode(pickle.dumps(gc))}
+            kwargs['connection_data'] = json.dumps(encoded)
+        else:
+            kwargs['connection_data'] = json.dumps(kwargs['connection_data'])
 
-    def __repr__(self):
-        return "Drive: %s" % self.library_identity
-
+        super(UploadEngine, self).__init__(*args, **kwargs)
 
 def configure():
     """
