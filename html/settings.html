@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>All items in Library for: {{ data.identity }}</h1>
+    <h2>Google Drive</h2>
+    
+    {% if data.google_drive %}
+        <a href="{{ data.google_drive }}">Attach Google Drive</a>
+    {% endif %}
+    
+    <h2>Amazon S3</h2>
+    {% for s3 in data.s3_engine %}
+        Bucket Name: <input type="text" value="{{ s3.bucket_name }}"><br>
+        Secret Key: <input type="text" class="secret_key" value="{{ s3.secret_key }}"><br>
+        Access Key: <input type="text" class="access_key" maxlength="25" value="{{ s3.access_key }}"><br>
+    {% endfor %}
+{% endblock %}

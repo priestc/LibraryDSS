@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>Welcome to Library Server</h1>
+    {% if data.user %}
+        <h3>Hello {{ data.user.username }}</h3>
+        <a href="/manage/{{ data.user.username }}">Manage Library</a><br>
+        <a href="/auth/logout">Logout</a>
+    {% else %}
+        <h3>Hello New User</h3>
+        <a href="/auth/register">Signup here</a><br>
+        <a href="/auth/login">Login here</a>
+    {% endif %}
+
+{% endblock %}

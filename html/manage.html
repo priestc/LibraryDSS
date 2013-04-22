@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Manage Library items</h1>
+    <h2>Items</h2>
+    <ul>
+        {% for item in data.library_items %}
+        <li>{{ item }}: {{item.url}}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

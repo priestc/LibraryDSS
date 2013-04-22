@@ -1,3 +1,6 @@
+import datetime
+import base64
+import pickle
 import json
 import hashlib
 import os
@@ -10,6 +13,8 @@ session = get_config('session')
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime, Boolean, func, desc
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import ConcreteBase
+
+from utils import fuzzy_to_datetime
 
 class Library(Base):
     identity = Column(String, primary_key=True)
@@ -27,7 +32,11 @@ class Library(Base):
         return session.query(cls).get(identity)
 
     def has(self, size=None, hash=None):
-        return any(x for x in self.items if x.hash == hash and x.size == size)
+        """
+        Does this size/md5 pair exist in my library?
+        """
+        items = session.query(Item).filter_by(library=self).filter_by(size=size, hash=hash)
+        return len(items.all()) > 0
 
     def get_storage(self, size):
         if self.s3_engine:
@@ -35,20 +44,29 @@ class Library(Base):
         if self.googledrive_engine:
             return self.googledrive_engine
 
-    def add_storage(self, engine, details):
+    def add_storage(self, engine, name, details):
         if engine == 's3':
             Engine = S3Engine
-
-        if engine == 'googledrive':
+        elif engine == 'googledrive':
             Engine = GoogleDriveEngine
 
-        e = Engine(library=self, **details)
+        e = Engine(library=self, name=name, **details)
         session.add(e)
 
-    def execute_query(self, query):
-        return []
+    def execute_query(self, **query):
+        # all metadata pairs for all items in this library.
+        items = session.query(Item).join(MetaData).filter(Item.library==self)
 
-    def add_item(self, date_created, url, size, hash, metadata):
+        for k, v in query.items():
+            if ' ' not in k:
+                items = items.filter(MetaData.key==k, MetaData.value==v)
+            else:
+                raise NotImplementedError("Fancy querying not supported yet")
+
+        #print "after: ", items.all()
+        return items.all()
+
+    def add_item(self, date_created, url, size, hash, mimetype, metadata, license='restricted'):
         """
         Import a new item into the Library.
         """
@@ -56,7 +74,11 @@ class Library(Base):
             url=url,
             library=self,
             size=size,
-            date_created=date_created,
+            origin=self.identity,
+            mimetype=mimetype,
+            license=license,
+            date_published=datetime.datetime.now(),
+            date_created=fuzzy_to_datetime(date_created),
             hash=hash,
         )
         i.set_metadata(metadata)
@@ -65,19 +87,22 @@ class Library(Base):
 
 class Item(Base):
     library_identity = Column(ForeignKey("giotto_library.identity"))
-    size = Column(Integer)
-    hash = Column(String, primary_key=True)
-    date_published = Column(DateTime)
-    date_created = Column(DateTime)
-    url = Column(String)
-    license = Column(String)
-    origin = Column(String)
+    size = Column(Integer, nullable=False)
+    hash = Column(String(64), primary_key=True)
+    date_published = Column(DateTime, nullable=False)
+    date_created = Column(DateTime, nullable=False)
+    mimetype = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    license = Column(String, nullable=False)
+    origin = Column(String, nullable=False)
 
     def __repr__(self):
-        return "[%i %s]" % (self.size, self.hash)
+        return "[%i#%s %s]" % (self.size, self.hash, self.mimetype)
 
     def set_metadata(self, metadata):
         for k, v in metadata.items():
+            if k.startswith('date'):
+                v = fuzzy_to_datetime(v)
             m = MetaData(key=k, value=v, item=self)
             session.add(m)
         session.commit()
@@ -105,6 +130,7 @@ class MetaData(Base):
 class S3Engine(Base):
     library_identity = Column(ForeignKey("giotto_library.identity"))
     library = relationship("Library", backref="s3_engine")
+    name = Column(String, nullable=False) # TODO: add unique contraint for name + identity
     bucket_name = Column(String, primary_key=True)
     secret_key = Column(String)
     access_key = Column(String)
@@ -123,10 +149,19 @@ class S3Engine(Base):
 class GoogleDriveEngine(Base):
     library_identity = Column(ForeignKey("giotto_library.identity"))
     library = relationship("Library", backref="googledrive_engine")
-    apikey = Column(String, primary_key=True)
+    name = Column(String, nullable=False) # TODO: add unique contraint for name + identity
+    credentials = Column(String, primary_key=True)
+
+    def __init__(self, *a, **kwargs):
+        """
+        Automatically pickle and b64encode the credentials object.
+        """
+        kwargs['credentials'] = base64.b64encode(pickle.dumps(kwargs['credentials']))
+        super(GoogleDriveEngine, self).__init__(*a, **kwargs)
 
     def todict(self):
-        return {"apikey": self.apikey, "name": "googledrive"}
+        credentials = pickle.loads(base64.b64decode(self.credentials))
+        return {"credentials": credentials, "name": "googledrive"}
 
     def __repr__(self):
         return "Drive: %s" % self.library_identity
@@ -136,3 +171,4 @@ def configure():
     """
     For changing configuration for the server.
     """
+    return

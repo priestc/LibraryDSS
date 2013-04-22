@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .errors {color: red}
+</style>
+<form method="post">
+    <span class="errors">{{ errors }}</span><br>
+    
+    <label for="username">Username:</label>
+    <input type="text" id="username" value="{{ errors.username.value }}" name="username">
+    <span class="errors">{{ errors.username.message }}</span>
+    <br>
+    
+    <label for="password">Password:</label>
+    <input type="password" id="password" value="" name="password">
+    <span class="errors">{{ errors.password.message }}</span>
+    <br>
+
+    <label for="password2">Password Again:</label>
+    <input type="password" id="password2" value="" name="password2">
+    <br>
+    
+    <input type="submit">
+</form>
+{% endblock %}
