@@ -34,20 +34,18 @@ def manage(identity):
         'library_items': library.items,
     }
 
-def settings(identity):
-    library = Library.get(identity)
-    s3_engine = library.s3_engine
-    googledrive_engine = library.googledrive_engine
+def settings(user=LOGGED_IN_USER):
+    library = Library.get(user.username)
 
-    if not googledrive_engine:
-        google_drive = get_flow().step1_get_authorize_url()
-    else:
-        google_drive = library.googledrive_engine
+    google_drive_url = None
+    if 'googledrive' not in [x.name for x in library.engines]:
+        # only generate a google drive auth url if no google drive engine exists
+        google_drive_url = get_flow().step1_get_authorize_url()
 
     return {
-        'identity': identity,
-        'google_drive': google_drive,
-        's3_engine': s3_engine,
+        'identity': user.username,
+        'google_drive_url': google_drive_url,
+        'engines': library.engines,
     }
 
 def connect_google_api(code, all=ALL_DATA, user=LOGGED_IN_USER):
@@ -70,3 +68,12 @@ def connect_google_api(code, all=ALL_DATA, user=LOGGED_IN_USER):
 def backup(identity=USER):
     library = Library.get(identity)
     return library.items
+
+def update_engine():
+    pass
+
+def migrate_off_engine():
+    pass
+
+def migrate_onto_engine():
+    pass

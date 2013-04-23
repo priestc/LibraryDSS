@@ -9,7 +9,9 @@ from giotto import get_config
 from models import Item, Library, configure
 from views import ForceJSONView
 from client import publish
-from server import finish_publish, start_publish, query, manage, connect_google_api, backup, settings
+from server import (finish_publish, start_publish, query, manage,
+    connect_google_api, backup, settings, migrate_off_engine, update_engine,
+    migrate_onto_engine)
 
 def test_wrapper():
     from test import functional_test
@@ -75,12 +77,26 @@ manifest = ProgramManifest({
             html=jinja_template("manage.html"),
         )
     ),
-    'settings': AuthenticationRequiredProgram(
-        model=[settings],
-        view=BasicView(
-            html=jinja_template('settings.html'),
+    'settings': ProgramManifest({
+        '': AuthenticationRequiredProgram(
+            model=[settings],
+            view=BasicView(
+                html=jinja_template('settings.html'),
+            ),
         ),
-    ),
+        'update_engine': AuthenticationRequiredProgram(
+            model=[update_engine],
+            view=BasicView,
+        ),
+        'migrate_off_engine': AuthenticationRequiredProgram(
+            model=[migrate_off_engine],
+            view=BasicView,
+        ),
+        'migrate_onto_engine': AuthenticationRequiredProgram(
+            model=[migrate_onto_engine],
+            view=BasicView,
+        ),
+    }),
     'google': ProgramManifest({
         'oauth2callback': AuthenticationRequiredProgram(
             model=[connect_google_api],

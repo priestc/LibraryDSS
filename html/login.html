@@ -1,11 +1,17 @@
-<form method="post">
-    <label for="username">Username: </label>
-    <input id="username" type="text" name="username">
-    <br>
+{% extends "base.html" %}
 
-    <label for="password">Password: </label>
-    <input id="password" type="password" name="password">
-    <br>
+{% block content %}
+    <span style="color:red">{{ errors }}</span>
+    <form method="post">
+        <label for="username">Username: </label>
+        <input id="username" type="text" name="username">
+        <br>
 
-    <input type="submit">
-</foam>
+        <label for="password">Password: </label>
+        <input id="password" type="password" name="password">
+        <br>
+
+        <input type="submit">
+    </foam>
+
+{% endblock %}

@@ -1,17 +1,36 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>All items in Library for: {{ data.identity }}</h1>
-    <h2>Google Drive</h2>
-    
-    {% if data.google_drive %}
-        <a href="{{ data.google_drive }}">Attach Google Drive</a>
+    <h1>Storage Engines</h1>
+    {% if data.google_drive_url %}
+        <a href="{{ data.google_drive_url }}">Attach Google Drive</a>
     {% endif %}
-    
-    <h2>Amazon S3</h2>
-    {% for s3 in data.s3_engine %}
-        Bucket Name: <input type="text" value="{{ s3.bucket_name }}"><br>
-        Secret Key: <input type="text" class="secret_key" value="{{ s3.secret_key }}"><br>
-        Access Key: <input type="text" class="access_key" maxlength="25" value="{{ s3.access_key }}"><br>
+
+    {% for engine in data.engines %}
+
+        {% if engine.name == 's3' %}
+            <h2>S3</h2>
+            <form method="post" action="/settings/update_engine">
+                Bucket Name: <input type="text" value="{{ engine.connection_data['bucket_name'] }}"><br>
+                Secret Key: <input type="text" class="secret_key" value="{{ engine.connection_data['secret_key'] }}"><br>
+                Access Key: <input type="text" class="access_key" maxlength="25" value="{{ engine.connection_data['access_key'] }}"><br>
+                <input type="hidden" name="engine_id" value="{{ engine.id }}">
+                <input type="submit">
+            </form>
+        {% endif %}
+
+        {% if engine.name == 'googledrive' %}
+            <h2>Google Drive</h2>
+        {% endif %}
+
+        {{ engine.get_total_size(human=True) }} stored ({{ engine.get_total_items() }} items)<br>
+        
+        <a href="settings/migrate_off_engine/{{ engine.id }}">Migrate all items off this engine</a><br>
+        <a href="settings/migrate_onto_engine/{{ engine.id }}">Migrate all items onto this engine</a><br>
+        <a href="settings/delete_engine/{{ engine.id }}">Delete all items on this engine</a><br>
+        <a href="settings/browse_engine/{{ engine.id }}">Browse all items on this engine</a><br>
+
+        <hr>
+
     {% endfor %}
 {% endblock %}
