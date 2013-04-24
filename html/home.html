@@ -3,6 +3,11 @@
 {% block content %}
 
     <h1>Welcome to Library Server</h1>
+
+    Total users: <strong>{{ data.library_count }}</strong><br>
+    Total items: <strong>{{ data.item_count }}</strong><br>
+    Total size of all files: <strong>{{ data.total_size }}</strong><br>
+
     {% if data.user %}
         <h3>Hello {{ data.user.username }}</h3>
         <a href="/manage/{{ data.user.username }}">Manage Library</a><br>

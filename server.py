@@ -1,12 +1,22 @@
 import httplib2
 
-from models import Library, UploadEngine
+from models import Library, UploadEngine, Item
 from giotto.primitives import ALL_DATA, USER, LOGGED_IN_USER
 from giotto import get_config
 
 from apiclient.discovery import build
 from google_api import get_flow
 from giotto.control import Redirection
+from utils import sizeof_fmt
+
+from sqlalchemy import func
+
+def home(user=LOGGED_IN_USER):
+    session = get_config('session')
+    library_count = session.query(Library).count()
+    item_count = session.query(Item).count()
+    total_size = session.query(func.sum(Item.size))[0][0]
+    return {'user': user, 'library_count': library_count, 'item_count': item_count, 'total_size': sizeof_fmt(total_size)}
 
 def start_publish(size, hash, identity=USER):
     """

@@ -3,6 +3,7 @@
 {% block extra_head %}
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script src="/static/settings.js"></script>
+    <link rel="stylesheet" href="/static/settings.css">
 {% endblock %}
 
 {% block content %}
@@ -31,6 +32,10 @@
 
             {% if engine.name == 'googledrive' %}
                 <h2>Google Drive</h2>
+            {% endif %}
+
+            {% if engine.name == 'dropbox' %}
+                <h2>DropBox</h2>
             {% endif %}
 
             Save new items here <input type="checkbox" {% if not engine.retired %}checked="checked"{% endif %}><br>

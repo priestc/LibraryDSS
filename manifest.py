@@ -12,7 +12,7 @@ from views import ForceJSONView
 from client import publish
 from server import (finish_publish, start_publish, query, manage,
     connect_google_api, backup, settings, migrate_off_engine, update_engine,
-    migrate_onto_engine)
+    migrate_onto_engine, home)
 
 from config import project_path
 
@@ -23,9 +23,6 @@ def test_wrapper():
 
 class AuthenticationRequiredProgram(GiottoProgram):
     pre_input_middleware = [AuthenticationMiddleware, AuthenticatedOrDie]
-
-def home(user=LOGGED_IN_USER):
-    return {'user': user}
 
 def post_register_callback(user):
     """
