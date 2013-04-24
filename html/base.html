@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        {% block extra_head %}{% endblock %}
+    </head>
     <body>
+        <nav>
+            <a href="/">Home</a> -
+            <a href="/manage">Manage</a> -
+            <a href="/settings">Settings</a> -
+            <a href="/auth/logout">Log Out</a>
+        </nav>
         {% block content%}{% endblock %}
     </body>
 </html>

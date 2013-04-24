@@ -168,6 +168,7 @@ class UploadEngine(Base):
     library_identity = Column(ForeignKey("giotto_library.identity"))
     library = relationship("Library", backref="engines")
     name = Column(String, nullable=False)
+    retired = Column(Boolean)
     _connection_data = Column(String) # json encoded
 
     def __init__(self, *args, **kwargs):
@@ -181,6 +182,8 @@ class UploadEngine(Base):
             kwargs['_connection_data'] = json.dumps(encoded)
         else:
             kwargs['_connection_data'] = json.dumps(kwargs['_connection_data'])
+
+        kwargs['retired'] = False if not 'retired' in kwargs else kwargs['retired']
 
         super(UploadEngine, self).__init__(*args, **kwargs)
 
@@ -204,6 +207,19 @@ class UploadEngine(Base):
 
     def __repr__(self):
         return "Engine: %s %s" % (self.name, self.library_identity)
+
+    def get_other_engines(self):
+        return []
+
+    def migrate_off(self):
+        """
+        Move all files off of this engine and onto other engines.
+        """
+
+    def migrate_onto(self):
+        """
+        Move all data from other engines onto this engine.
+        """
 
     def get_total_size(self, human=False):
         """

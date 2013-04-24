@@ -3,6 +3,7 @@ from giotto.programs.management import management_manifest
 from giotto.views import GiottoView, BasicView, jinja_template
 from giotto.contrib.auth.middleware import AuthenticationMiddleware, AuthenticatedOrDie
 from giotto.contrib.auth.manifest import create_auth_manifest
+from giotto.contrib.static.programs import StaticServe
 from giotto.primitives import LOGGED_IN_USER
 from giotto import get_config
 
@@ -12,6 +13,8 @@ from client import publish
 from server import (finish_publish, start_publish, query, manage,
     connect_google_api, backup, settings, migrate_off_engine, update_engine,
     migrate_onto_engine)
+
+from config import project_path
 
 def test_wrapper():
     from test import functional_test
@@ -85,6 +88,7 @@ manifest = ProgramManifest({
             ),
         ),
         'update_engine': AuthenticationRequiredProgram(
+            controllers=['http-post'],
             model=[update_engine],
             view=BasicView,
         ),
@@ -115,4 +119,5 @@ manifest = ProgramManifest({
         model=[test_wrapper],
         view=BasicView
     ),
+    'static': StaticServe(project_path + '/static/'),
 })

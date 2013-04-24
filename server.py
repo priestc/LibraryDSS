@@ -25,11 +25,11 @@ def query(query, identity=USER):
     library = Library.get(identity)
     return library.execute_query(query)
 
-def manage(identity):
+def manage(user=LOGGED_IN_USER):
     """
     Render the library management page.
     """
-    library = Library.get(identity)
+    library = Library.get(user.username)
     return {
         'library_items': library.items,
     }
@@ -69,11 +69,25 @@ def backup(identity=USER):
     library = Library.get(identity)
     return library.items
 
-def update_engine():
-    pass
+def update_engine(engine_id, data=ALL_DATA, user=LOGGED_IN_USER):
+    session = get_config('session')
+    engine = session.query(UploadEngine, Library)\
+                    .filter(UploadEngine.id==engine_id)\
+                    .filter(Library.identity==user.username).first()
+    return {'e': engine}
 
-def migrate_off_engine():
-    pass
+def migrate_off_engine(engine_id, user=LOGGED_IN_USER):
+    session = get_config('session')
+    engine = session.query(UploadEngine, Library)\
+                    .filter(UploadEngine.id==engine_id)\
+                    .filter(Library.identity==user.username).first()
+    engine.migrate_off()
+    return Redirection('/settings')
 
-def migrate_onto_engine():
-    pass
+def migrate_onto_engine(engine_id, user=LOGGED_IN_USER):
+    session = get_config('session')
+    engine = session.query(UploadEngine, Library)\
+                    .filter(UploadEngine.id==engine_id)\
+                    .filter(Library.identity==user.username).first()
+    engine.migrate_onto()
+    return Redirection('/settings')
