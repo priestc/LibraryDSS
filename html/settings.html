@@ -12,6 +12,10 @@
         <a href="{{ data.google_drive_url }}">Attach Google Drive</a>
     {% endif %}
 
+    {% if data.dropbox_url %}
+        <a href="{{ data.dropbox_url }}">Attach Dropbox</a>
+    {% endif %}
+
     {% for engine in data.engines %}
         <form class="engine_details" method="post" action="/settings/update_engine" id="engine_{{ engine.id }}">
             <input type="hidden" name="engine_id" value="{{ engine.id }}">

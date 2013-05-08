@@ -1,6 +1,6 @@
 from giotto.programs import GiottoProgram, ProgramManifest
 from giotto.programs.management import management_manifest
-from giotto.views import GiottoView, BasicView, jinja_template
+from giotto.views import GiottoView, BasicView, jinja_template, URLFollower
 from giotto.contrib.auth.middleware import AuthenticationMiddleware, AuthenticatedOrDie
 from giotto.contrib.auth.manifest import create_auth_manifest
 from giotto.contrib.static.programs import StaticServe
@@ -11,10 +11,15 @@ from models import Item, Library, configure
 from views import ForceJSONView
 from client import publish
 from server import (finish_publish, start_publish, query, manage,
-    connect_google_api, backup, settings, migrate_off_engine, update_engine,
-    migrate_onto_engine, home)
+    google_api_callback, backup,
+    settings, migrate_off_engine, update_engine, migrate_onto_engine, home)
 
 from config import project_path
+
+from giotto_dropbox.manifest import make_dropbox_manifest
+from giotto_google.manifest import make_google_manifest
+
+from third_party import dropbox_api_callback, google_api_callback
 
 def test_wrapper():
     from test import functional_test
@@ -98,13 +103,14 @@ manifest = ProgramManifest({
             view=BasicView,
         ),
     }),
-    'google': ProgramManifest({
-        'oauth2callback': AuthenticationRequiredProgram(
-            model=[connect_google_api],
-            view=BasicView,
-        ),
-
-    }),
+    'google': make_google_manifest(
+        auth_program_class=AuthenticationRequiredProgram,
+        post_auth_callback=google_api_callback
+    ),
+    'dropbox': make_dropbox_manifest(
+        auth_program_class=AuthenticationRequiredProgram,
+        post_auth_callback=dropbox_api_callback,
+    ),
     'publish': GiottoProgram(
         controller=['cmd'],
         model=[publish],
@@ -115,6 +121,10 @@ manifest = ProgramManifest({
         # run a quick and dirty test to see if everything is working.
         model=[test_wrapper],
         view=BasicView
+    ),
+    'urltest': GiottoProgram(
+        model=[lambda: "http://google.com"],
+        view=URLFollower(),
     ),
     'static': StaticServe(project_path + '/static/'),
 })

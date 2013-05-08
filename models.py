@@ -11,9 +11,8 @@ from giotto import get_config
 Base = get_config('Base')
 session = get_config('session')
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime, Boolean, func, desc
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime, Boolean, func, desc, PickleType
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import ConcreteBase
 
 from utils import fuzzy_to_datetime, sizeof_fmt
 from query import compile_query
@@ -46,10 +45,7 @@ class Library(Base):
         return random.choice(self.engines)
 
     def add_storage(self, engine, connection_data):
-        if engine == 'googledrive':
-            e = UploadEngine(library=self, name=engine, google_credentials=connection_data)
-        else:
-            e = UploadEngine(library=self, name=engine, _connection_data=connection_data)
+        e = UploadEngine(library=self, name=engine, connection_data=connection_data)
         session.add(e)
         session.commit()
         return e
@@ -169,41 +165,19 @@ class UploadEngine(Base):
     library = relationship("Library", backref="engines")
     name = Column(String, nullable=False)
     retired = Column(Boolean)
-    _connection_data = Column(String) # json encoded
+    connection_data = Column(PickleType)
 
     def __init__(self, *args, **kwargs):
         """
         Turn the connection_data arg into json. You must pass in only serializable
         data. Also, automatically pickle and b64encode google credentials objects.
         """
-        gc = kwargs.pop('google_credentials', None)
-        if gc:
-            encoded = {'credentials': base64.b64encode(pickle.dumps(gc))}
-            kwargs['_connection_data'] = json.dumps(encoded)
-        else:
-            kwargs['_connection_data'] = json.dumps(kwargs['_connection_data'])
-
+        # retired default is False
         kwargs['retired'] = False if not 'retired' in kwargs else kwargs['retired']
-
         super(UploadEngine, self).__init__(*args, **kwargs)
 
-    @property
-    def connection_data(self):
-        if getattr(self, "__connection_data", False):
-            return self.__connection_data
-
-        self.__connection_data = json.loads(self._connection_data)
-
-        if self.name == 'googledrive':
-            credentials = self.__connection_data['credentials']
-            unencoded = pickle.loads(base64.b64decode(credentials))
-            self.__connection_data['credentials'] = unencoded
-
-        return self.__connection_data
-
     def todict(self):
-        connection_data = self._connection_data()
-        return {'name': self.name, 'data': connection_data}
+        return {'name': self.name, 'data': self.connection_data}
 
     def __repr__(self):
         return "Engine: %s %s" % (self.name, self.library_identity)
