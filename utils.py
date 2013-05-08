@@ -1,6 +1,8 @@
 import datetime
 import dateutil
 import iso8601
+import hashlib
+import logging
 
 def sizeof_fmt(num):
     """
@@ -53,6 +55,19 @@ def datetime_to_fuzzy(dt):
         return dt.strftime("%Y-%m-%d")
 
     return dt.isoformat()
+
+def do_hash(filename):
+    """
+    Perform a hash on the file before uploading. Done in chunks so not to take
+    up too much memory.
+    """
+    logging.info("Hashing...")
+    sha256 = hashlib.sha256()
+    with open(filename,'rb') as f: 
+        for chunk in iter(lambda: f.read(8192), b''): 
+             sha256.update(chunk)
+    logging.info("... Complete")
+    return sha256.hexdigest()
 
 if __name__ == '__main__':
     assert fuzzy_to_datetime('2001').isoformat() == '2001-01-01T00:00:00.111111'

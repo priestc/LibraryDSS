@@ -1,6 +1,5 @@
 import datetime
 import os
-import hashlib
 import requests
 import mimetypes
 import logging
@@ -13,6 +12,7 @@ from giotto_s3.upload import upload as upload_s3
 from giotto_dropbox.upload import upload_s3 as upload_dropbox
 from giotto_google.upload import upload as upload_google_drive
 
+from utils import do_hash
 
 def publish(filename, metadata=ALL_DATA):
     """
@@ -54,19 +54,6 @@ def publish(filename, metadata=ALL_DATA):
     _complete_publish(settings, size, hash, url, metadata)
     return "Publish Complete. Took %s" % (datetime.datetime.now() - t0)
 
-def _do_hash(filename):
-    """
-    Perform a hash on the file before uploading. Done in chunks so not to take
-    up too much memory.
-    """
-    logging.warn("Hashing...")
-    sha256 = hashlib.sha256()
-    with open(filename,'rb') as f: 
-        for chunk in iter(lambda: f.read(8192), b''): 
-             sha256.update(chunk)
-    logging.warn("... Complete")
-    return sha256.hexdigest()
-
 def _upload_to_engine(settings, filename, size, hash):
     """
     Call the server, get the engine info, then proceed to do the upload.
@@ -83,8 +70,20 @@ def _upload_to_engine(settings, filename, size, hash):
         msg = response.error
         raise Exception("Library Server Error: (%s) %s" % (code, msg))
 
-    url = upload_engine(filename, size, hash, response.json)
-    return url
+    engine = response.json[0]
+    ext = filename.split('.')[-1]
+    endfilename = "%s.%s.%s" % (size, hash, ext)
+    
+    if engine['name'] == 's3':
+        return upload_s3(filename, endfilename, engine)
+
+    if engine['name'] == 'googledrive':
+        return upload_google_drive(filename, endfilename, engine)
+
+    if engine['name'] == 'dropbox':
+        return upload_dropbox(filename, endfilename, engine)
+
+    raise Exception("No Storage Engine configured")
 
 def _complete_publish(settings, size, hash, url, metadata):
     """
@@ -106,22 +105,3 @@ def _complete_publish(settings, size, hash, url, metadata):
 
 def is_url(url):
     return url.startswith('http')
-
-def upload_engine(filename, size, hash, engine):
-    """
-    This code is called by the client. It gets data that comes from the server.
-    """
-    engine = engine[0]
-    ext = filename.split('.')[-1]
-    endfilename = "%s.%s.%s" % (size, hash, ext)
-    
-    if engine['name'] == 's3':
-        return upload_s3(engine['bucket_name'], engine['access_key'], engine['secret_key'], filename, endfilename)
-
-    if engine['name'] == 'googledrive':
-        return upload_google_drive(filename, endfilename, engine)
-
-    if engine['name'] == 'dropbox':
-        return upload_dropbox(filename, engine)
-
-    raise Exception("No Storage Engine configured")
