@@ -1,16 +1,23 @@
-from models import get_flow
 from giotto.primitives import ALL_DATA, LOGGED_IN_USER
+from giotto.programs import GiottoProgram, ProgramManifest
+from giotto.views import URLFollower
 
-def make_google_manifest(post_auth_callback=None):
-    def google_api_callback(code, all=ALL_DATA, user=LOGGED_IN_USER):
-        """
-        After authenticating with the Google API Auth server, it redirects the user
-        back to this program, where `code` is exchanged for an auth token, and
-        then stored.
-        """
-        flow = get_flow()
-        credentials = flow.step2_exchange(code)
-        if post_auth_callback:
-            return post_auth_callback(user, credentials)
+from models import make_callback_model
 
-    return google_api_callback
+def make_google_manifest(auth_program_class=None, post_auth_callback=None):
+    """
+    Use this function to create a manifest object. Pass in a function
+    GiottoProgram subclass that imlplements auth. Also pass in a callback
+    function for execution after authentication successful.
+    """
+    if not auth_program_class:
+        auth_program_class = GiottoProgram
+
+    callback_model = make_callback_model(post_auth_callback)
+
+    return ProgramManifest({
+        'oauth2callback': auth_program_class(
+            model=[callback_model],
+            view=URLFollower(),
+        )
+    })

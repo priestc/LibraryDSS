@@ -1,5 +1,7 @@
+import base64
 import datetime
 import os
+import pickle
 import requests
 import mimetypes
 import logging
@@ -9,7 +11,7 @@ import tomlpython
 from giotto.primitives import ALL_DATA
 
 from giotto_s3.upload import upload as upload_s3
-from giotto_dropbox.upload import upload_s3 as upload_dropbox
+from giotto_dropbox.upload import upload as upload_dropbox
 from giotto_google.upload import upload as upload_google_drive
 
 from utils import do_hash
@@ -39,7 +41,7 @@ def publish(filename, metadata=ALL_DATA):
         # upload a local file
         created = datetime.datetime.fromtimestamp(os.stat(filename).st_ctime)
         size = os.stat(filename).st_size
-        hash = _do_hash(filename)
+        hash =  do_hash(filename)
         ext = filename.split('.')[-1]
         f.seek(0)
         logging.warn("File is: %s.%s.%s" % (size, hash, ext))
@@ -63,27 +65,39 @@ def _upload_to_engine(settings, filename, size, hash):
     client_url = settings['client']['library']['url']
     identity = settings['client']['library']['identity']
     url = "%s/startPublish" % client_url
-    response = requests.post(url, data=data, auth=(identity, ''))
-    
+
+    try:
+        response = requests.post(url, data=data, auth=(identity, ''))
+    except requests.exceptions.ConnectionError:
+        raise Exception("Could not connect to Library Server: %s" % url)
+
     code = response.status_code
     if code != 200:
         msg = response.error
         raise Exception("Library Server Error: (%s) %s" % (code, msg))
 
-    engine = response.json[0]
     ext = filename.split('.')[-1]
     endfilename = "%s.%s.%s" % (size, hash, ext)
-    
-    if engine['name'] == 's3':
-        return upload_s3(filename, endfilename, engine)
 
-    if engine['name'] == 'googledrive':
-        return upload_google_drive(filename, endfilename, engine)
+    for engine in response.json:
+        # engine data is transmitted as a base64 encoded pickle.
+        connect_data = pickle.loads(base64.b64decode(engine['data']))
+        name = engine['name']
+        id = engine['id']
+        
+        try:
+            if name == 's3':
+                return id, upload_s3(filename, endfilename, connect_data)
 
-    if engine['name'] == 'dropbox':
-        return upload_dropbox(filename, endfilename, engine)
+            if name == 'googledrive':
+                return id, upload_google_drive(filename, endfilename, connect_data)
 
-    raise Exception("No Storage Engine configured")
+            if name == 'dropbox':
+                return id, upload_dropbox(filename, endfilename, connect_data)
+        except Exception as exc:
+            print "upload to %s failed: %s" % (name, exc)
+
+    raise Exception("Upload failed.")
 
 def _complete_publish(settings, size, hash, url, metadata):
     """

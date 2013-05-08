@@ -42,7 +42,9 @@ class Library(Base):
         return len(items.all()) > 0
 
     def get_storage(self, size):
-        return random.choice(self.engines)
+        x = self.engines
+        random.shuffle(x)
+        return x
 
     def add_storage(self, engine, connection_data):
         e = UploadEngine(library=self, name=engine, connection_data=connection_data)
@@ -96,12 +98,12 @@ class Library(Base):
         #print "after: ", items.all()
         return items.all()
 
-    def add_item(self, engine, date_created, url, size, hash, mimetype, metadata, license='restricted'):
+    def add_item(self, engine_id, date_created, url, size, hash, mimetype, metadata, license='restricted'):
         """
         Import a new item into the Library.
         """
         i = Item(
-            engine=engine,
+            engine_id=engine_id,
             url=url,
             library=self,
             size=size,
@@ -177,7 +179,8 @@ class UploadEngine(Base):
         super(UploadEngine, self).__init__(*args, **kwargs)
 
     def todict(self):
-        return {'name': self.name, 'data': self.connection_data}
+        cd = base64.b64encode(pickle.dumps(self.connection_data))
+        return {'name': self.name, 'data': cd, 'id': self.id}
 
     def __repr__(self):
         return "Engine: %s %s" % (self.name, self.library_identity)

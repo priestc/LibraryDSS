@@ -1,13 +1,10 @@
 import logging
-import boto
-import requests
 import datetime
 
 import math
 import mimetypes
 from multiprocessing import Pool
 import os
-import uuid
 
 from boto.s3.connection import S3Connection
 from filechunkio import FileChunkIO
@@ -50,10 +47,15 @@ def _upload_part(bucketname, aws_key, aws_secret, multipart_id, part_num, total_
     _upload()
 
 
-def upload_s3(bucketname, aws_key, aws_secret, source_path, keyname, headers={}):
+def upload(source_path, keyname, engine):
     """
     Parallel multipart upload. from http://www.topfstedt.de/weblog/?p=558
     """
+    headers = {}
+    aws_key = engine['access_key']
+    aws_secret = engine['secret_key']
+    bucketname = engine['bucket_name']
+
     conn = S3Connection(aws_key, aws_secret)
     bucket = conn.get_bucket(bucketname)
     parallel_processes = 1

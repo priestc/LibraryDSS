@@ -16,8 +16,8 @@ from sqlalchemy import func
 def home(user=LOGGED_IN_USER):
     session = get_config('session')
     library_count = session.query(Library).count()
-    item_count = session.query(Item).count()
-    total_size = session.query(func.sum(Item.size))[0][0]
+    item_count = session.query(Item).count() or 0
+    total_size = session.query(func.sum(Item.size))[0][0] or 0
     return {'user': user, 'library_count': library_count, 'item_count': item_count, 'total_size': sizeof_fmt(total_size)}
 
 def start_publish(size, hash, identity=USER):
@@ -28,9 +28,9 @@ def start_publish(size, hash, identity=USER):
     library = Library.get(identity)
     return library.get_storage(size)
 
-def finish_publish(url, size, hash, date_created, mimetype, metadata=ALL_DATA, identity=USER):
+def finish_publish(url, size, hash, date_created, mimetype, engine_id=None, metadata=ALL_DATA, identity=USER):
     library = Library.get(identity)
-    library.add_item(url=url, date_created=date_created, mimetype=mimetype, size=size, hash=hash, metadata=metadata)
+    library.add_item(url=url, engine_id=engine_id, date_created=date_created, mimetype=mimetype, size=size, hash=hash, metadata=metadata)
     return "OK"
 
 def query(query, identity=USER):

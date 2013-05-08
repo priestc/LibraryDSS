@@ -2,6 +2,8 @@ from giotto import get_config
 from models import Library, UploadEngine
 from giotto_google.models import get_google_flow
 
+session = get_config('session')
+
 def dropbox_api_callback(user, access_token):
     """
     Handles the request that the user makes given by the dropbox API as part of
@@ -9,7 +11,6 @@ def dropbox_api_callback(user, access_token):
     """
     library = Library.get(user.username)
     engine = UploadEngine(name="dropbox", connection_data=access_token, library=library)
-    session = get_config('session')
     session.add(engine)
     session.commit()
 
@@ -22,11 +23,7 @@ def google_api_callback(user, credentials):
     then stored.
     """
     library = Library.get(user.username)
-    flow = get_google_flow()
-    credentials = flow.step2_exchange(code)
-
     engine = UploadEngine(name="googledrive", connection_data=credentials, library=library)
-    session = get_config('session')
     session.add(engine)
     session.commit()
 

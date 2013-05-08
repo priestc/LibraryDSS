@@ -1,6 +1,6 @@
 from giotto.programs import GiottoProgram, ProgramManifest
 from giotto.programs.management import management_manifest
-from giotto.views import GiottoView, BasicView, jinja_template, URLFollower
+from giotto.views import GiottoView, BasicView, jinja_template, URLFollower, ForceJSONView
 from giotto.contrib.auth.middleware import AuthenticationMiddleware, AuthenticatedOrDie
 from giotto.contrib.auth.manifest import create_auth_manifest
 from giotto.contrib.static.programs import StaticServe
@@ -8,10 +8,8 @@ from giotto.primitives import LOGGED_IN_USER
 from giotto import get_config
 
 from models import Item, Library, configure
-from views import ForceJSONView
 from client import publish
-from server import (finish_publish, start_publish, query, manage,
-    google_api_callback, backup,
+from server import (finish_publish, start_publish, query, manage, backup,
     settings, migrate_off_engine, update_engine, migrate_onto_engine, home)
 
 from config import project_path
@@ -19,7 +17,7 @@ from config import project_path
 from giotto_dropbox.manifest import make_dropbox_manifest
 from giotto_google.manifest import make_google_manifest
 
-from third_party import dropbox_api_callback, google_api_callback
+from third_party_callbacks import dropbox_api_callback, google_api_callback
 
 def test_wrapper():
     from test import functional_test
