@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+    .metadata_item {
+        background: #EE3388;
+        width: 400px;
+        border: 1px solid black;
+        padding: 10px;
+        margin: 5px;
+        overflow: hidden;
+    }
+
+    .metadata_item input {
+        float: right;
+        width: 180px;
+    }
+
+    .metadata_item .title {
+        float: left;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <h1>Single Item</h1>
+    <strong>Size:</strong> {{ data.size }} {% if data.size > 1024 %}({{ data.human_size() }}){% endif %}<br>
+    <strong>Hash:</strong> {{ data.hash }}<br>
+    <strong>Date Published:</strong> {{ data.date_published.isoformat() }}
+
+    <form method="post" id="metadata_form">
+        <input type="hidden" name="size" value="{{ data.size }}">
+        <input type="hidden" name="hash" value="{{ data.hash }}">   
+        <div id="metadata_container">
+            {% for key, value in data.get_mutable_metadata() %}
+            <div class="metadata_item">
+                <span class="title">{{ key }}</span>
+                <input type="text" value="{{ value }}">
+            </div>
+            {% endfor %}
+        </div>
+        <a href="#" class="greenplus"><img src="/static/greenplus.png"></a><br>
+        <input type="submit">
+    </form>
+
+    <script>
+        $(".greenplus").click(function() {
+            var html = "<div class=\"metadata_item\"><span class=\"title\"><input type=\"text\"></span><input type=\"text\"></div>";
+            $("#metadata_container").append(html);
+        });
+
+        $("#metadata_form").submit(function() {
+            alert("submitted");
+            return false;
+        });
+    </script>
+{% endblock %}
