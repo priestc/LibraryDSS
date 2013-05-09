@@ -74,11 +74,11 @@ manifest = ProgramManifest({
             html=jinja_template("configure.html"),
         ),
     ),
-    'manage': AuthenticationRequiredProgram(
-        # HTML page for looking at contents and adding storag engines
+    'items': AuthenticationRequiredProgram(
+        # HTML page for looking at items and querying them
         model=[manage],
         view=BasicView(
-            html=jinja_template("manage.html"),
+            html=jinja_template("items.html"),
         ),
     ),
     'item': [

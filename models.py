@@ -68,50 +68,66 @@ class Library(Base):
         return e
 
     def execute_query(self, query):
-        query_obj = compile_query(query)
-        #import debug
-        #print query_obj
+        query_clauses = compile_query(query)
 
         # all metadata pairs for all items in this library.
         items = session.query(Item).join(MetaData).filter(Item.library==self)
+        print items.all()
 
-        for k, (v, method) in query_obj.items():
-            attr = k
+        for polarity, key, operator, value in query_clauses:
+            is_date = is_date_key(key)
+            db_clause = []
 
-            is_date = (k.endswith('_date') or k.startswith('date_') or '_date_' in k)
-            if is_date and v != '*':
-                # this value will be interpreted as a date.
-                v = fuzzy_to_datetime(v)
+            if operator == 'exact':
+                import debug
+                db_clause = [MetaData.key==key and MetaData.value == value]
+            elif operator == 'lessthan':
+                db_clause = [MetaData.key==key and MetaData.value < value]
+            elif operator == 'greaterthan':
+                db_clause = [MetaData.key==key and MetaData.value < value]
+            elif operator == 'has_any':
+                db_clause = [MetaData.key==key]
 
-            if attr in BUILT_IN:
-                # attributes that are stored directly onto the model.
-                if attr == 'mimetype' and v.endswith('*'):
-                    # wildcard mimetype querying
-                    first_part = v[:-1]
-                    items = items.filter(Item.mimetype.startswith(first_part))
-                elif attr == 'mimetype':
-                    # exact mimetype querying
-                    items = items.filter(getattr(Item, k)==v)
-                elif is_date:
-                    if method == 'less':
-                        items = items.filter(getattr(Item, attr)<v)
-                    elif method == 'greater':
-                        items = items.filter(getattr(Item, attr)>=v)
-                    else:
-                        # TODO: full fuzzy matching
-                        items = items.filter(getattr(Item, attr)==v)
-                else:
-                    items = items.filter(getattr(Item, attr)==v)
-
+            if polarity == 'including':
+                items = items.filter(*db_clause)
+            elif polarity == 'excluding':
+                items = items.exclude(*db_clause)
             else:
-                # attributes that are stored on the MetaData table.
-                if v == '*':
-                    items = items.filter(MetaData.key==k)
-                else:
-                    items = items.filter(MetaData.key==k, MetaData.value==v)
+                raise Exception("Invalid polarity clause: %s" % polarity)
 
-        #print "after: ", items.all()
+        print items.all()
         return items.all()
+
+        if is_date and value != '*':
+            # this value will be interpreted as a date.
+            v = fuzzy_to_datetime(v)
+
+        if key in BUILT_IN:
+            # attributes that are stored directly onto the model.
+            if key == 'mimetype' and value.endswith('*'):
+                # wildcard mimetype querying
+                first_part = value[:-1]
+                items = items.filter(Item.mimetype.startswith(first_part))
+            elif key == 'mimetype':
+                # exact mimetype querying
+                items = items.filter(getattr(Item, key)==value)
+            elif is_date:
+                if method == 'less':
+                    items = items.filter(getattr(Item, key) < value)
+                elif method == 'greater':
+                    items = items.filter(getattr(Item, key) >= value)
+                else:
+                    # TODO: full fuzzy matching
+                    items = items.filter(getattr(Item, key) == value)
+            else:
+                items = items.filter(getattr(Item, key) == value)
+
+        else:
+            # attributes that are stored on the MetaData table.
+            if v == '*':
+                items = items.filter(MetaData.key==k)
+            else:
+                items = items.filter(MetaData.key==k, MetaData.value==v)
 
     def add_item(self, engine_id, date_created, url, size, hash, mimetype, metadata, license='restricted'):
         """

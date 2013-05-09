@@ -1,21 +1,21 @@
 def compile_query(s):
     """
-    Turn a string LQL query into a dict object.
+    Turn a string LQL query into a dict object for more easier
+    filtering.
     """
-    out = {}
-    for item in s.split(';'):
-        if '=' in item:
-            key, value = item.split("=")
-            method = "exact"
+    out = []
+    for clause in s.split(';'):
+        clause = clause.strip()
+        polarity, key, operator = clause.split(' ')[:3]
+        value = " ".join(clause.split(' ')[3:])
 
-        if '>' in item:
-            key, value = item.split(">")
-            method = "greater"
+        wrapped_in_quoted = (
+            (value.startswith('"') and value.endswith('"')) or 
+            (value.startswith("'") and value.endswith("'"))
+        ) 
+        if wrapped_in_quoted:
+            value = value[1:][:-1]
 
-        if '<' in item:
-            key, value = item.split("<")
-            method = "less"
-
-        out[key.strip()] = [value.strip(), method]
+        out.append([polarity, key, operator, value])
 
     return out

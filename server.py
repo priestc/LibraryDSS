@@ -37,13 +37,18 @@ def query(query, identity=USER):
     library = Library.get(identity)
     return library.execute_query(query)
 
-def manage(user=LOGGED_IN_USER):
+def manage(query=None, user=LOGGED_IN_USER):
     """
     Render the library management page.
     """
     library = Library.get(user.username)
+    if query:
+        items = library.execute_query(query) 
+    else:
+        items = library.items
+
     return {
-        'library_items': library.items,
+        'library_items': items,
     }
 
 def settings(user=LOGGED_IN_USER):

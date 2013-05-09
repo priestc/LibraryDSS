@@ -16,6 +16,9 @@ from giotto_google.upload import upload as upload_google_drive
 
 from utils import do_hash
 
+def query(query):
+    pass
+
 def publish(filename, metadata=ALL_DATA):
     """
     Upload the following filename to the library server.

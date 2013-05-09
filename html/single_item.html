@@ -19,6 +19,11 @@
     .metadata_item .title {
         float: left;
     }
+
+    .engine_logo {
+        width: 32px;
+        height: 32px;
+    }
 </style>
 {% endblock %}
 
@@ -26,13 +31,22 @@
     <h1>Single Item</h1>
     <strong>Size:</strong> {{ data.size }} {% if data.size > 1024 %}({{ data.human_size() }}){% endif %}<br>
     <strong>Hash:</strong> {{ data.hash }}<br>
-    <strong>Date Published:</strong> {{ data.date_published.isoformat() }}
+    <strong>Date Published:</strong> {{ data.date_published.isoformat() }}<br>
+
+    <strong>Storage engine: </strong>
+    {% if data.engine.name == 's3' %}
+        <img class="engine_logo" src="/static/s3_logo.png">
+    {% elif data.engine.name == 'dropbox' %}
+        <img class="engine_logo" src="/static/dropbox_logo.jpg">
+    {% elif data.engine.name == 'googledrive' %}
+        <img class="engine_logo" src="/static/drive_logo.png">
+    {% endif %}
 
     <form method="post" id="metadata_form">
         <input type="hidden" name="size" value="{{ data.size }}">
         <input type="hidden" name="hash" value="{{ data.hash }}">   
         <div id="metadata_container">
-            {% for key, value in data.get_mutable_metadata() %}
+            {% for key, value in data.get_all_metadata(only_mutable=True) %}
             <div class="metadata_item">
                 <span class="title">{{ key }}</span>
                 <input type="text" value="{{ value }}">

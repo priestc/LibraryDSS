@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    <style>
+        .key {
+            color: red;
+        }
+        .value {
+            color: blue;
+        }
+
+        .item {
+            border: 1px solid black;
+            background: #DDDDFF;
+            padding: 5px;
+            margin: 5px;
+            width: 800px;
+        }
+
+        .subtitle {
+            color: grey;
+        }
+        .engine_logo {
+            width: 32px;
+            height: 32px;
+        }
+
+        a.add_new_query_clause img {
+            width: 32px;
+            height: 32px
+        }
+
+        .query_container {
+            background: #DD1144;
+            padding: 3px;
+            margin: 5px;
+        }
+
+        .query_container input[type=text] {
+            width: 200px
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Library Media</h1>
+    <div class="query_container">
+        <h3>Query</h3>
+        <div class="query_clauses">
+            <div class="single_clause">
+                <select class="polarity">
+                    <option value="including">INCLUDING</option>
+                    <option value="excluding">EXCLUDING</option>
+                </select>
+                <input type="text" class="key">
+                <select class="operator">
+                    <option value="exact">Exact</option>
+                    <option value="greaterthan">Greater Than</option>
+                    <option value="lessthan">Less Than</option>
+                    <option value="matches">Matches</option>
+                </select>
+                <input type="text" class="value">
+            </div>
+        </div>
+        <a href="#" class="add_new_query_clause"><img src="/static/greenplus.png"></a><br>
+        <button class="submit_query_button">Submit</button>
+    </div>
+
+    <ul>
+        {% for item in data.library_items %}
+        <li>
+            <div class="item">
+                <h3>
+                    {{ item.get_metadata('title')|default("No Title") }}<br>
+                    <span class="subtitle">{{ item.get_metadata('subtitle') }}</span>
+                </h3>
+                <p>
+                    {% for key, value in item.get_all_metadata(only_mutable=False) %}
+                    <span class="key">{{ key }}:</span>
+                    <span class="value">{{ value }}</span>
+                    {% endfor %}
+                </p>
+                <p>
+                    <a href="/item/{{ item.size }}/{{ item.hash }}">Edit</a>
+                    Engine: 
+                    {% if item.engine.name == 's3' %}
+                        <img class="engine_logo" src="/static/s3_logo.png">
+                    {% elif item.engine.name == 'dropbox' %}
+                        <img class="engine_logo" src="/static/dropbox_logo.jpg">
+                    {% elif item.engine.name == 'googledrive' %}
+                        <img class="engine_logo" src="/static/drive_logo.png">
+                    {% endif %}
+                </p>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    <script>
+        function query_from_generator(submit_element) {
+            // Generate a LQL query based on the filter html widget.
+            // Passed in must be the select button element of the widget.
+            var clauses = submit_element.parent().find('.single_clause');
+            var query = '';
+
+            clauses.each(function(index, e) {
+                var e = $(e);
+                var key = e.find('input.key').val();
+                var value = e.find('input.value').val();
+                var operator = e.find('select.operator').val();
+                var polarity = e.find('select.polarity').val();
+                var this_clause = polarity + ' ' + key + ' ' + operator + ' ' + value + '; ';
+                query += this_clause
+            });
+            return query;
+        }
+
+        $(".add_new_query_clause").click(function() {
+            var t = $(this).parent();
+            var template = "<div class=\"single_clause\">" + $(".single_clause").html() + "</div>";
+            t.find(".query_clauses").append(template);
+        });
+
+        $(".submit_query_button").click(function() {
+            var query = query_from_generator($(this));
+            window.location.href = "/items?query=" + query
+        });
+    </script>
+{% endblock %}
