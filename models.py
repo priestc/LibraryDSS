@@ -19,7 +19,9 @@ from giotto.exceptions import DataNotFound
 from utils import fuzzy_to_datetime, datetime_to_fuzzy, sizeof_fmt, is_date_key
 from query import compile_query
 
-BUILT_IN_ITEM_ATTRS = ['mimetype', 'size', 'date_published', 'date_created', 'license', 'origin']
+IMMUTABLE_BUILT_IN = ['hash', 'size', 'date_published', 'license', 'origin']
+MUTABLE_BUILT_IN = ['mimetype', 'date_created', 'url']
+BUILT_IN = IMMUTABLE_BUILT_IN + MUTABLE_BUILT_IN
 
 class Distribution(Base):
     """
@@ -81,7 +83,7 @@ class Library(Base):
                 # this value will be interpreted as a date.
                 v = fuzzy_to_datetime(v)
 
-            if attr in BUILT_IN_ITEM_ATTRS:
+            if attr in BUILT_IN:
                 # attributes that are stored directly onto the model.
                 if attr == 'mimetype' and v.endswith('*'):
                     # wildcard mimetype querying
@@ -165,7 +167,7 @@ class Item(Base):
     def reset_metadata(self, metadata):
         session.query(MetaData).filter_by(item=self).delete()
         for key, value in metadata.items():
-            if key in BUILT_IN_ITEM_ATTRS:
+            if key in BUILT_IN:
                 setattr(self, key, value)
             else:
                 m = MetaData(key=key, value=value, item=self)
@@ -174,26 +176,34 @@ class Item(Base):
 
     
     def get_metadata(self, key):
-        if key in ['date_created', 'mimetype', 'url']:
+        """
+        Get metadata for this
+        """
+        if key in BUILT_IN:
             ret = getattr(self, key)
             if key.startswith("date_"):
                 return datetime_to_fuzzy(ret)
             return ret
 
         result = session.query(MetaData).filter_by(item=self, key=key).first()
-        return result and result.value
+        return (result and result.value) or ''
 
-    def get_mutable_metadata(self):
+    def get_all_metadata(self, only_mutable=False):
         """
         Return all metadata for this item. Sorted by key name alphabetical.
+        mutable: only include fields that can be changed
         """
         query = session.query(MetaData).filter_by(item=self).order_by(MetaData.key)
         meta = {m.key: m.get_value() for m in query}
+        
+        fields = MUTABLE_BUILT_IN
+        if not only_mutable:
+            fields += IMMUTABLE_BUILT_IN
+
         meta.update({
-            'date_created': datetime_to_fuzzy(self.date_created),
-            'mimetype': self.mimetype,
-            'url': self.url,
+            key: self.get_metadata(key) for key in fields
         })
+
         return sorted([(key, value) for key, value in meta.items()], key=lambda x: x[0])
 
     def as_json(self):

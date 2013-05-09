@@ -5,9 +5,20 @@
         .key {
             color: red;
         }
-
         .value {
             color: blue;
+        }
+
+        .item {
+            border: 1px solid black;
+            background: #DDDDFF;
+            padding: 5px;
+            margin: 5px;
+            width: 800px;
+        }
+        
+        .subtitle {
+            color: grey;
         }
     </style>
 {% endblock %}
@@ -18,14 +29,19 @@
     <ul>
         {% for item in data.library_items %}
         <li>
-            <div>
-                <h3>{{ item.get_metadata('title')|default("No Title") }}</h3>
+            <div class="item">
+                <h3>
+                    {{ item.get_metadata('title')|default("No Title") }}<br>
+                    <span class="subtitle">{{ item.get_metadata('subtitle') }}</span>
+                </h3>
                 <p>
-                    <a href="/item/{{ item.size }}/{{ item.hash }}">Edit</a><br>
-                    {% for key, value in item.get_mutable_metadata() %}
-                        <span class="key">{{ key }}:</span>
-                        <span class="value">{{ value }}</span>
+                    {% for key, value in item.get_all_metadata(only_mutable=False) %}
+                    <span class="key">{{ key }}:</span>
+                    <span class="value">{{ value }}</span>
                     {% endfor %}
+                </p>
+                <p>
+                    <a href="/item/{{ item.size }}/{{ item.hash }}">Edit</a>
                 </p>
             </div>
         </li>
