@@ -13,11 +13,24 @@ session = get_config('session')
 
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime, Boolean, func, desc, PickleType
 from sqlalchemy.orm import relationship
+from giotto.primitives import LOGGED_IN_USER
+from giotto.exceptions import DataNotFound
 
-from utils import fuzzy_to_datetime, sizeof_fmt
+from utils import fuzzy_to_datetime, datetime_to_fuzzy, sizeof_fmt, is_date_key
 from query import compile_query
 
 BUILT_IN_ITEM_ATTRS = ['mimetype', 'size', 'date_published', 'date_created', 'license', 'origin']
+
+class Distribution(Base):
+    """
+    Represents a set of files that get shared between two parties.
+    """
+    id = Column(Integer, primary_key=True)
+    library_id = Column(ForeignKey("giotto_library.identity"))
+    library = relationship('Library', backref="disributions")
+    identities = Column(String) # people these files are shared with
+    query = Column(String) # the query that defines the files
+    license = Column(String) # the license that gets applied to the files when moved.
 
 class Library(Base):
     identity = Column(String, primary_key=True)
@@ -114,7 +127,7 @@ class Library(Base):
             date_created=fuzzy_to_datetime(date_created),
             hash=hash,
         )
-        i.set_metadata(metadata)
+        i.reset_metadata(metadata)
         session.add(i)
         session.commit()
 
@@ -131,24 +144,61 @@ class Item(Base):
     engine_id = Column(ForeignKey("giotto_uploadengine.id"))
     engine = relationship('UploadEngine')
 
+    def human_size(self):
+        return sizeof_fmt(self.size)
+
+    @classmethod
+    def get(cls, size, hash, user=LOGGED_IN_USER):
+        ret = session.query(cls)\
+                      .filter_by(size=size, hash=hash)\
+                      .filter_by(library_identity=user.username)\
+                      .first()
+
+        if not ret:
+            raise DataNotFound()
+
+        return ret
+
     def __repr__(self):
         return "[%s]" % (self.date_created) #, self.hash, self.mimetype)
 
-    def set_metadata(self, metadata):
-        for k, v in metadata.items():
-            if k.startswith('date'):
-                v = fuzzy_to_datetime(v)
-            m = MetaData(key=k, value=v, item=self)
-            session.add(m)
+    def reset_metadata(self, metadata):
+        session.query(MetaData).filter_by(item=self).delete()
+        for key, value in metadata.items():
+            if key in BUILT_IN_ITEM_ATTRS:
+                setattr(self, key, value)
+            else:
+                m = MetaData(key=key, value=value, item=self)
+                session.add(m)
         session.commit()
 
-    def metadata_to_dict(self):
-        meta = session.query(MetaData).filter_by(library=self)
-        return {m.key: m.value for m in meta}
-        
+    
+    def get_metadata(self, key):
+        if key in ['date_created', 'mimetype', 'url']:
+            ret = getattr(self, key)
+            if key.startswith("date_"):
+                return datetime_to_fuzzy(ret)
+            return ret
+
+        result = session.query(MetaData).filter_by(item=self, key=key).first()
+        return result and result.value
+
+    def get_mutable_metadata(self):
+        """
+        Return all metadata for this item. Sorted by key name alphabetical.
+        """
+        query = session.query(MetaData).filter_by(item=self).order_by(MetaData.key)
+        meta = {m.key: m.get_value() for m in query}
+        meta.update({
+            'date_created': datetime_to_fuzzy(self.date_created),
+            'mimetype': self.mimetype,
+            'url': self.url,
+        })
+        return sorted([(key, value) for key, value in meta.items()], key=lambda x: x[0])
+
     def as_json(self):
-        data = {"origin": self.origin, "hash": self.hash, "filesize": self.filesize}
-        data.update(self.metadata_to_dict)
+        data = {"origin": self.origin, "hash": self.hash, "size": self.size}
+        data.update(self.get_metadata())
         return json.dumps(data)
 
 class MetaData(Base):
@@ -160,6 +210,16 @@ class MetaData(Base):
 
     def __repr__(self):
         return "%s %s=%s" % (self.item, self.key, self.value)
+
+    def __init__(self, **kwargs):
+        if is_date_key(kwargs['key']):
+            kwargs['value'] = fuzzy_to_datetime(kwargs['value'])
+        return super(MetaData, self).__init__(**kwargs)
+
+    def get_value(self):
+        if is_date_key(self.key):
+            return datetime_to_fuzzy(self.value)
+        return self.value
 
 class UploadEngine(Base):
     id = Column(Integer, primary_key=True)

@@ -1,11 +1,34 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+    <style>
+        .key {
+            color: red;
+        }
+
+        .value {
+            color: blue;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     <h1>Manage Library items</h1>
     <h2>Items</h2>
     <ul>
         {% for item in data.library_items %}
-        <li>{{ item }}: {{item.url}}</li>
+        <li>
+            <div>
+                <h3>{{ item.get_metadata('title')|default("No Title") }}</h3>
+                <p>
+                    <a href="/item/{{ item.size }}/{{ item.hash }}">Edit</a><br>
+                    {% for key, value in item.get_mutable_metadata() %}
+                        <span class="key">{{ key }}:</span>
+                        <span class="value">{{ value }}</span>
+                    {% endfor %}
+                </p>
+            </div>
+        </li>
         {% endfor %}
     </ul>
 {% endblock %}

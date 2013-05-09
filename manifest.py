@@ -10,7 +10,8 @@ from giotto import get_config
 from models import Item, Library, configure
 from client import publish
 from server import (finish_publish, start_publish, query, manage, backup,
-    settings, migrate_off_engine, update_engine, migrate_onto_engine, home)
+    settings, migrate_off_engine, update_engine, migrate_onto_engine, home,
+    edit_item)
 
 from config import project_path
 
@@ -78,8 +79,22 @@ manifest = ProgramManifest({
         model=[manage],
         view=BasicView(
             html=jinja_template("manage.html"),
-        )
+        ),
     ),
+    'item': [
+        AuthenticationRequiredProgram(
+            controllers=['http-get'],
+            model=[Item.get],
+            view=BasicView(
+                html=jinja_template('single_item.html'),
+            ),
+        ),
+        AuthenticationRequiredProgram(
+            controllers=['http-post'],
+            model=[edit_item],
+            view=BasicView(),
+        ),
+    ],
     'settings': ProgramManifest({
         '': AuthenticationRequiredProgram(
             model=[settings],

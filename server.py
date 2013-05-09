@@ -66,6 +66,10 @@ def settings(user=LOGGED_IN_USER):
         'dropbox_url': dropbox_url,
     }
 
+def edit_item(size, hash, user=LOGGED_IN_USER):
+    item = Item.get(size=size, hash=hash, user=user)
+    return item
+
 def backup(identity=USER):
     library = Library.get(identity)
     return library.items

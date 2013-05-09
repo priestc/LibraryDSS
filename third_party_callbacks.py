@@ -10,7 +10,8 @@ def dropbox_api_callback(user, access_token):
     the oauth process. This is the callback used in oauth1.
     """
     library = Library.get(user.username)
-    engine = UploadEngine(name="dropbox", connection_data=access_token, library=library)
+    at = {'key': access_token.key, 'secret': access_token.secret}
+    engine = UploadEngine(name="dropbox", connection_data=at, library=library)
     session.add(engine)
     session.commit()
 

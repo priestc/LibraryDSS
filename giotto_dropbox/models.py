@@ -14,6 +14,9 @@ from dropbox import session
 Base = get_config("Base")
 
 class DropboxRequestToken(Base):
+    """
+    Table for storing request token as part of th authentication process.
+    """
     user_id = Column(ForeignKey("giotto_user.username"), primary_key=True)
     user = relationship(User)
     secret = Column(String)
@@ -30,6 +33,10 @@ class DropboxRequestToken(Base):
 
     @classmethod
     def get(cls, user):
+        """
+        This function should only be called after the user has clicked on the
+        authorize URL and has confirmed the authorization.
+        """
         s = get_config("session")
         ret = s.query(cls).filter(cls.user==user).first()
         return session.OAuthToken(key=ret.key, secret=ret.secret)

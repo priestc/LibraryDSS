@@ -37,6 +37,12 @@ def fuzzy_to_datetime(fuzzy):
     return dt
 
 def datetime_to_fuzzy(dt):
+    """
+    Pass in either a datetime object, or a string representing an iso 8601 date
+    """
+    if not isinstance(dt, datetime.datetime):
+        dt = iso8601.parse_date(dt)
+
     ms = str(dt.microsecond)
     flag1 = ms == '111111'
     flag2 = ms == '222222'
@@ -69,6 +75,9 @@ def do_hash(filename):
     logging.info("... Complete")
     return sha256.hexdigest()
 
+def is_date_key(key):
+    return key.endswith("_date") or key.startswith("date_") or "_date_" in key
+
 if __name__ == '__main__':
     assert fuzzy_to_datetime('2001').isoformat() == '2001-01-01T00:00:00.111111'
     assert fuzzy_to_datetime('1981-05').isoformat() == '1981-05-01T00:00:00.222222'
@@ -86,3 +95,7 @@ if __name__ == '__main__':
     assert datetime_to_fuzzy(fuzzy_to_datetime('2002-05')) == '2002-05'
     assert datetime_to_fuzzy(fuzzy_to_datetime('2002-02-13')) == '2002-02-13'
     assert datetime_to_fuzzy(fuzzy_to_datetime('2010-11-11T03:12:03.293856+00:00')) == '2010-11-11T03:12:03.293856+00:00'
+
+    assert is_date_key("date_made")
+    assert is_date_key("some_date_found")
+    assert is_date_key("the_date")
