@@ -19,34 +19,43 @@
         <div class="engine">
             <form class="engine_details" method="post" action="/settings/update_engine" engine-id="{{ engine.id }}">
                 <input type="hidden" name="engine_id" value="{{ engine.id }}">
+                
                 {% if engine.name == 's3' %}
-                    <h2>S3</h2>
-                    <label for="s3_bucket_name">Bucket Name:</label>
-                    <input id="s3_bucket_name" name="bucket_name" type="text" value="{{ engine.connection_data['bucket_name'] }}">
-                    <br>
-                    
-                    <label for="s3_secret_key">Secret Key:</label>
-                    <input id="s3_secret_key" name="secret_key" type="text" class="secret_key" value="{{ engine.connection_data['secret_key'] }}">
-                    <br>
-                    
-                    <label for="s3_access_key">Access Key:</label>
-                    <input id="s3_access_key" name="access_key" type="text" class="access_key" value="{{ engine.connection_data['access_key'] }}">
-                    <br>
+                <h2><img class="engine_logo" src="/static/amazon_logo.png">Amazon S3</h2>
                 {% endif %}
 
                 {% if engine.name == 'googledrive' %}
-                    <h2>Google Drive</h2>
+                <h2><img class="engine_logo" src="/static/drive_logo.png">Google Drive</h2>
                 {% endif %}
 
                 {% if engine.name == 'dropbox' %}
-                    <h2>DropBox</h2>
+                <h2><img class="engine_logo" src="/static/dropbox_logo.png">DropBox</h2>
+                {% endif %}
+                
+                <div class="engine_capacity">{{ engine.get_total_size(human=True) }} stored ({{ engine.get_total_items() }} items)</div>
+                <div>
+                    <label for="checkbox_{{ engine.id }}">Save new items here</label>
+                    <input id="checkbox_{{ engine.id }}" type="checkbox" {% if not engine.retired %}checked="checked"{% endif %}>
+                </div>
+                
+                <hr>
+
+                {% if engine.name == 's3' %}
+                <label for="s3_bucket_name">Bucket Name:</label>
+                <input id="s3_bucket_name" name="bucket_name" type="text" value="{{ engine.connection_data['bucket_name'] }}">
+                <br>
+                
+                <label for="s3_secret_key">Secret Key:</label>
+                <input id="s3_secret_key" name="secret_key" type="text" class="secret_key" value="{{ engine.connection_data['secret_key'] }}">
+                <br>
+                
+                <label for="s3_access_key">Access Key:</label>
+                <input id="s3_access_key" name="access_key" type="text" class="access_key" value="{{ engine.connection_data['access_key'] }}">
+                <br>
                 {% endif %}
 
-                Save new items here <input type="checkbox" {% if not engine.retired %}checked="checked"{% endif %}><br>
-
                 <input class="submit_engine_changes" value="Update Changes" type="submit" engine-id="{{ engine.id }}"><br>
-                <br>
-                {{ engine.get_total_size(human=True) }} stored ({{ engine.get_total_items() }} items)<br>
+                
                 <ul>
                     <li><a href="settings/migrate_off_engine/{{ engine.id }}">Migrate all items off this engine</a></li>
                     <li><a href="settings/migrate_onto_engine/{{ engine.id }}">Migrate all items onto this engine</a></li>

@@ -10,13 +10,14 @@ function show_submit_button() {
 
 $(function() {
     $('form.engine_details').submit(function(event) {
-        alert("SSS");
-        return false;
-
         var engine_id = $(this).attr('engine-id');
-        var form = $("#engine_" + engine_id);
+        var form = $(this);
 
-        $.ajax(); // make ajax call then return the result to
+        $.ajax({
+            'url': "/update_engine_details",
+        }).complete(function() {
+            console.log("ajax completed");
+        });
         
         $("#result_engine_" + engine_id).text("Saved");
         return false;

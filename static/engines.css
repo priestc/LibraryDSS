@@ -1,7 +1,7 @@
 input[type=text] {width: 20em}
 
 .engine {
-    background: #119933;
+    background: #DD99DD;
     width: 500px;
     border: 1px solid black;
     padding: 5px;
@@ -14,4 +14,20 @@ input[type=text] {width: 20em}
 
 label {
     width: 100px;
+}
+
+.engine_capacity {
+}
+
+.engine h2 {
+    padding:0px;
+    margin:0px;
+    color: white;
+    font-weight: bold;
+}
+
+.engine_logo {
+    height: 32px;
+    width: 32px;
+    margin-right: 5px;
 }
