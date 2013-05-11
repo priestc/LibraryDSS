@@ -1,49 +1,7 @@
 {% extends "base.html" %}
 
 {% block extra_head %}
-    <style>
-        .key {
-            color: red;
-        }
-        .value {
-            color: blue;
-        }
-
-        .item {
-            border: 1px solid black;
-            background: #DDDDFF;
-            padding: 5px;
-            margin: 5px;
-            width: 800px;
-        }
-
-        .subtitle {
-            color: grey;
-        }
-        .engine_logo {
-            width: 32px;
-            height: 32px;
-        }
-
-        a.add_new_query_clause img {
-            width: 32px;
-            height: 32px
-        }
-
-        .query_container {
-            background: #DD1144;
-            padding: 3px;
-            margin: 5px;
-        }
-
-        .query_container input[type=text] {
-            width: 200px
-        }
-
-        .single_clause_template {
-            display: none;
-        }
-    </style>
+<link rel="stylesheet" href="/static/items.css">
 {% endblock %}
 
 {% block content %}
@@ -56,30 +14,48 @@
         <a href="#" class="add_new_query_clause"><img src="/static/greenplus.png"></a><br>
         <button class="submit_query_button">Submit</button>
     </div>
-    <div>Items returned: {{ data.items_count }}</div>
+
+    <div>
+        Items returned: {{ data.items_count }}
+    </div>
+    
     <ul>
         {% for item in data.library_items %}
         <li>
             <div class="item">
+                <div class="edit_item_link">
+                    <a href="/item/{{ item.size }}/{{ item.hash }}">Edit</a>    
+                </div>
+                
+                <img class="mimetype icon" src="/static/{{ item.get_icon() }}_icon.png">
+
                 <h3>
-                    {{ item.get_metadata('title')|default("No Title") }}<br>
-                    <span class="subtitle">{{ item.get_metadata('subtitle') }}</span>
+                    {{ item.get_metadata('title')|default("No Title") }}
                 </h3>
-                <p>
+
+                <h4>
+                    <span class="subtitle">{{ item.get_metadata('subtitle') }}</span>
+                    <span class="date_created">{{ item.get_metadata("date_created") }}</span>
+                </h4>
+
+                <p class="all_metadata">
+                    <table border=1>
                     {% for key, value in item.get_all_metadata(only_mutable=False) %}
-                    <span class="key">{{ key }}:</span>
-                    <span class="value">{{ value }}</span>
+                        <tr>
+                            <td class="key">{{ key }}:</td>
+                            <td class="value">{{ value }}</td>
+                        </tr>
                     {% endfor %}
+                    </table>
                 </p>
                 <p>
-                    <a href="/item/{{ item.size }}/{{ item.hash }}">Edit</a>
                     Engine: 
                     {% if item.engine.name == 's3' %}
-                        <img class="engine_logo" src="/static/amazon_logo.png">
+                        <img class="storage icon" src="/static/amazon_logo.png">
                     {% elif item.engine.name == 'dropbox' %}
-                        <img class="engine_logo" src="/static/dropbox_logo.jpg">
+                        <img class="storage icon" src="/static/dropbox_logo.png">
                     {% elif item.engine.name == 'googledrive' %}
-                        <img class="engine_logo" src="/static/drive_logo.png">
+                        <img class="storage icon" src="/static/drive_logo.png">
                     {% endif %}
                 </p>
             </div>

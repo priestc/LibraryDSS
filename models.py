@@ -122,6 +122,23 @@ class Item(Base):
     def __repr__(self):
         return "[%s]" % (self.date_created) #, self.hash, self.mimetype)
 
+    def get_icon(self):
+        """
+        Based on the mimetype and some other verious metadata, return an icon
+        that represents this item. Used in the UI.
+        """
+        if self.mimetype.startswith("image/"):
+            return "image"
+
+        if self.mimetype.startswith("video/"):
+            return "video"
+
+        if self.mimetype.startswith("text/"):
+            return "text"
+
+        return "unknown"
+
+
     def reset_metadata(self, metadata):
         session.query(MetaData).filter_by(item=self).delete()
         for key, value in metadata.items():

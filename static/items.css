@@ -1,0 +1,69 @@
+.key {
+    color: red;
+}
+.value {
+    color: blue;
+}
+
+.item {
+    border: 1px solid black;
+    background: #DDDDFF;
+    padding: 5px;
+    margin: 5px;
+    width: 800px;
+    position: relative;
+    top:0;
+    left:0;
+}
+
+.item h3 {
+    margin: 0px;
+    margin-top: 3px;
+    margin-left: 35px;
+    padding: 0px;
+}
+
+.item h4 {
+    margin: 0px;
+    margin-left: 35px;
+}
+
+.mimetype.icon {
+    position: absolute;
+    top: 3px;
+}
+
+.subtitle {
+    color: grey;
+}
+
+.icon {
+    vertical-align: bottom;
+    width: 32px;
+    height: 32px;
+}
+
+a.add_new_query_clause img {
+    width: 32px;
+    height: 32px
+}
+
+.query_container {
+    background: #DD1144;
+    padding: 3px;
+    margin: 5px;
+}
+
+.query_container input[type=text] {
+    width: 200px
+}
+
+.single_clause_template {
+    display: none;
+}
+
+.edit_item_link {
+    position: absolute;
+    right: 10px;
+    top: 8px;
+}

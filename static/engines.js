@@ -7,7 +7,6 @@ function show_submit_button() {
     $(".submit_engine_changes[engine-id=" + id + "]").css('visibility', 'visible');
 }
 
-
 $(function() {
     $('form.engine_details').submit(function(event) {
         var engine_id = $(this).attr('engine-id');
