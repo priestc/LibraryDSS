@@ -1,0 +1,17 @@
+input[type=text] {width: 20em}
+
+.engine {
+    background: #119933;
+    width: 500px;
+    border: 1px solid black;
+    padding: 5px;
+    margin: 5px;
+}
+
+.submit_engine_changes {
+    visibility: hidden;
+}
+
+label {
+    width: 100px;
+}
