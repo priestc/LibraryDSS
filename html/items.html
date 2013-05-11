@@ -39,6 +39,10 @@
         .query_container input[type=text] {
             width: 200px
         }
+
+        .single_clause_template {
+            display: none;
+        }
     </style>
 {% endblock %}
 
@@ -47,25 +51,12 @@
     <div class="query_container">
         <h3>Query</h3>
         <div class="query_clauses">
-            <div class="single_clause">
-                <select class="polarity">
-                    <option value="including">INCLUDING</option>
-                    <option value="excluding">EXCLUDING</option>
-                </select>
-                <input type="text" class="key">
-                <select class="operator">
-                    <option value="exact">Exact</option>
-                    <option value="greaterthan">Greater Than</option>
-                    <option value="lessthan">Less Than</option>
-                    <option value="matches">Matches</option>
-                </select>
-                <input type="text" class="value">
-            </div>
+            
         </div>
         <a href="#" class="add_new_query_clause"><img src="/static/greenplus.png"></a><br>
         <button class="submit_query_button">Submit</button>
     </div>
-
+    <div>Items returned: {{ data.items_count }}</div>
     <ul>
         {% for item in data.library_items %}
         <li>
@@ -95,7 +86,45 @@
         </li>
         {% endfor %}
     </ul>
+
+    <div class="single_clause_template">
+        <select class="polarity">
+            <option value="including">INCLUDING</option>
+            <option value="excluding">EXCLUDING</option>
+        </select>
+        <input type="text" class="key">
+        <select class="operator">
+            <option value="exact">Exact</option>
+            <option value="greaterthan">Greater Than</option>
+            <option value="lessthan">Less Than</option>
+            <option value="is_present">Is Present</option>
+        </select>
+        <input type="text" class="value">
+    </div>
+
     <script>
+        fill_in_generator({{ data.parsed_query_json }});
+
+        function fill_in_generator(query) {
+            $(".single_clause").remove();
+            $.each(query, function(index, clause) {
+                var id = create_query_clause_element();
+                var polarity = clause[0],
+                    key = clause[1],
+                    operator = clause[2],
+                    value = clause[3];
+
+                console.log(id, polarity, key, operator, value)
+
+                $("#" + id + " select.polarity").val(polarity);
+                $("#" + id + " select.operator").val(operator);
+                $("#" + id + " input.key").val(key);
+                $("#" + id + " input.value").val(value);
+            });
+
+            create_query_clause_element();
+        }
+
         function query_from_generator(submit_element) {
             // Generate a LQL query based on the filter html widget.
             // Passed in must be the select button element of the widget.
@@ -108,21 +137,28 @@
                 var value = e.find('input.value').val();
                 var operator = e.find('select.operator').val();
                 var polarity = e.find('select.polarity').val();
-                var this_clause = polarity + ' ' + key + ' ' + operator + ' ' + value + '; ';
-                query += this_clause
+                
+                if(key) {
+                    var this_clause = polarity + ' ' + key + ' ' + operator + ' ' + value + '; ';
+                    query += this_clause;
+                }
             });
             return query;
         }
 
-        $(".add_new_query_clause").click(function() {
-            var t = $(this).parent();
-            var template = "<div class=\"single_clause\">" + $(".single_clause").html() + "</div>";
-            t.find(".query_clauses").append(template);
-        });
+        function create_query_clause_element() {
+            var html = $(".single_clause_template").html();
+            var id = Math.floor(Math.random()*119);
+            var template = "<div id=\"" + id + "\" class=\"single_clause\">" + html + "</div>";
+            $(".query_clauses").append(template);
+            return id
+        }
+
+        $(".add_new_query_clause").click(create_query_clause_element);
 
         $(".submit_query_button").click(function() {
             var query = query_from_generator($(this));
-            window.location.href = "/items?query=" + query
+            window.location.href = "/items?query=" + encodeURIComponent(query);
         });
     </script>
 {% endblock %}

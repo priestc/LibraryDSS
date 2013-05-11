@@ -8,8 +8,8 @@ from giotto.primitives import LOGGED_IN_USER
 from giotto import get_config
 
 from models import Item, Library, configure
-from client import publish
-from server import (finish_publish, start_publish, query, manage, backup,
+from client import publish, query
+from server import (finish_publish, start_publish, items, backup,
     settings, migrate_off_engine, update_engine, migrate_onto_engine, home,
     edit_item)
 
@@ -28,6 +28,9 @@ def test_wrapper():
 class AuthenticationRequiredProgram(GiottoProgram):
     pre_input_middleware = [AuthenticationMiddleware, AuthenticatedOrDie]
 
+class AuthenticationProgram(GiottoProgram):
+    pre_input_middleware = [AuthenticationMiddleware]
+
 def post_register_callback(user):
     """
     After a new user signs up, create a Library for them.
@@ -43,9 +46,21 @@ manifest = ProgramManifest({
         input_middleware=[AuthenticationMiddleware],
         model=[home],
         view=BasicView(
-            html=jinja_template('home.html')
+            html=jinja_template('home.html'),
         ),
     ),
+    'apps': ProgramManifest({
+        'camera': GiottoProgram(
+            view=BasicView(
+                html=jinja_template("camera.html"),
+            ),
+        ),
+        'blog': GiottoProgram(
+            view=BasicView(
+                html=jinja_template("blog.html"),
+            ),
+        ),
+    }),
     'auth': create_auth_manifest(
         post_register_callback=post_register_callback,
     ),
@@ -59,10 +74,6 @@ manifest = ProgramManifest({
         model=[finish_publish, "OK"],
         view=BasicView,
     ),
-    'query': GiottoProgram(
-        model=[query],
-        view=BasicView,
-    ),
     'backup': GiottoProgram(
         model=[backup],
         view=ForceJSONView
@@ -74,9 +85,9 @@ manifest = ProgramManifest({
             html=jinja_template("configure.html"),
         ),
     ),
-    'items': AuthenticationRequiredProgram(
+    'items': AuthenticationProgram(
         # HTML page for looking at items and querying them
-        model=[manage],
+        model=[items],
         view=BasicView(
             html=jinja_template("items.html"),
         ),
@@ -95,11 +106,11 @@ manifest = ProgramManifest({
             view=BasicView(),
         ),
     ],
-    'settings': ProgramManifest({
+    'engines': ProgramManifest({
         '': AuthenticationRequiredProgram(
             model=[settings],
             view=BasicView(
-                html=jinja_template('settings.html'),
+                html=jinja_template('engines.html'),
             ),
         ),
         'update_engine': AuthenticationRequiredProgram(
@@ -125,19 +136,25 @@ manifest = ProgramManifest({
         post_auth_callback=dropbox_api_callback,
     ),
     'publish': GiottoProgram(
-        controller=['cmd'],
+        controllers=['cmd'],
         model=[publish],
         view=BasicView,
     ),
+    'query': GiottoProgram(
+        controllers=['cmd'],
+        model=[query],
+        view=BasicView,
+    ),
     'mgt': management_manifest,
-    'test': GiottoProgram(
-        # run a quick and dirty test to see if everything is working.
-        model=[test_wrapper],
-        view=BasicView
-    ),
-    'urltest': GiottoProgram(
-        model=[lambda: "http://google.com"],
-        view=URLFollower(),
-    ),
-    'static': StaticServe(project_path + '/static/'),
+    'test': ProgramManifest({
+        'integration': GiottoProgram(
+            # run a quick and dirty test to see if everything is working.
+            model=[test_wrapper],
+            view=BasicView
+        ),
+        'lql_parse': GiottoProgram(
+
+        ),
+    }),
+    'static': StaticServe('/static/'),
 })

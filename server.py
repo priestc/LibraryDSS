@@ -1,4 +1,5 @@
 import httplib2
+import json
 
 from models import Library, UploadEngine, Item
 from giotto.primitives import ALL_DATA, USER, LOGGED_IN_USER
@@ -37,18 +38,28 @@ def query(query, identity=USER):
     library = Library.get(identity)
     return library.execute_query(query)
 
-def manage(query=None, user=LOGGED_IN_USER):
+def items(query=None, user=LOGGED_IN_USER, identity=USER):
     """
     Render the library management page.
     """
-    library = Library.get(user.username)
+    query_json = '[]'
+    if query:
+        from query import compile_query
+        query_json = json.dumps(compile_query(query))
+
+    if not identity and (user and user.username):
+        identity = user.username
+
+    library = Library.get(identity)
     if query:
         items = library.execute_query(query) 
     else:
         items = library.items
 
     return {
+        'parsed_query_json': query_json,
         'library_items': items,
+        'items_count': len(items),
     }
 
 def settings(user=LOGGED_IN_USER):

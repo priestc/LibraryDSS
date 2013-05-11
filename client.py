@@ -1,5 +1,6 @@
 import base64
 import datetime
+import json
 import os
 import pickle
 import requests
@@ -17,7 +18,14 @@ from giotto_google.upload import upload as upload_google_drive
 from utils import do_hash
 
 def query(query):
-    pass
+    with open(".library_identity.example") as identity_file:
+        identity = identity_file.read().strip()
+    q = {'query': query}
+    identity_user, identity_url = identity.split('@')
+    url = "http://%s/items.json" % identity_url
+    response = requests.get(url, params=q, auth=(identity_user, ''))
+    return json.tool(response.json)
+
 
 def publish(filename, metadata=ALL_DATA):
     """
@@ -28,8 +36,8 @@ def publish(filename, metadata=ALL_DATA):
     """
     t0 = datetime.datetime.now()
 
-    with open("example.library_publish.toml") as datafile:
-        settings = tomlpython.parse(datafile)
+    with open(".library_identity.example") as datafile:
+        identity = datafile.read().strip()
     
     try:
         f = open(filename, 'r')
@@ -48,7 +56,7 @@ def publish(filename, metadata=ALL_DATA):
         ext = filename.split('.')[-1]
         f.seek(0)
         logging.warn("File is: %s.%s.%s" % (size, hash, ext))
-        url = _upload_to_engine(settings, filename, size, hash)
+        url = _upload_to_engine(identity, filename, size, hash)
 
         if 'date_created' not in metadata:
             metadata['date_created'] = created
@@ -56,18 +64,16 @@ def publish(filename, metadata=ALL_DATA):
         if 'mimetype' not in metadata:
             metadata['mimetype'] = mimetypes.guess_type(filename)
 
-    _complete_publish(settings, size, hash, url, metadata)
+    _complete_publish(identity, size, hash, url, metadata)
     return "Publish Complete. Took %s" % (datetime.datetime.now() - t0)
 
-def _upload_to_engine(settings, filename, size, hash):
+def _upload_to_engine(identity, filename, size, hash):
     """
     Call the server, get the engine info, then proceed to do the upload.
     Afterwords, return the url of the newly uploaded file.
     """
     data = {"size": size, "hash": hash}
-    client_url = settings['client']['library']['url']
-    identity = settings['client']['library']['identity']
-    url = "%s/startPublish" % client_url
+    url = "http://%s/startPublish" % identity
 
     try:
         response = requests.post(url, data=data, auth=(identity, ''))
@@ -102,7 +108,7 @@ def _upload_to_engine(settings, filename, size, hash):
 
     raise Exception("Upload failed.")
 
-def _complete_publish(settings, size, hash, url, metadata):
+def _complete_publish(identity, size, hash, url, metadata):
     """
     Send the actual URL back to the library server after uploading.
     Or if the user passes in a URL, pass on that url directly.
@@ -114,10 +120,8 @@ def _complete_publish(settings, size, hash, url, metadata):
         # url
         metadata.update({"url": url})
 
-    client_url = settings['client']['library']['url']
-    identity = settings['client']['library']['identity']
     print "right before client sends upload details back to finishPublish", metadata
-    response = requests.post("%s/completePublish" % client_url, data=metadata, auth=(identity, ''))
+    response = requests.post("http://%s/completePublish" % identity, data=metadata, auth=(identity, ''))
     print "Library server response...", response.content
 
 def is_url(url):

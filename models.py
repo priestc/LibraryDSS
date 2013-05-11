@@ -17,7 +17,7 @@ from giotto.primitives import LOGGED_IN_USER
 from giotto.exceptions import DataNotFound
 
 from utils import fuzzy_to_datetime, datetime_to_fuzzy, sizeof_fmt, is_date_key
-from query import compile_query
+from query import execute_query
 
 IMMUTABLE_BUILT_IN = ['hash', 'size', 'date_published', 'license', 'origin']
 MUTABLE_BUILT_IN = ['mimetype', 'date_created', 'url']
@@ -67,67 +67,9 @@ class Library(Base):
         session.commit()
         return e
 
-    def execute_query(self, query):
-        query_clauses = compile_query(query)
-
-        # all metadata pairs for all items in this library.
+    def execute_query(self, query, identity=None):        
         items = session.query(Item).join(MetaData).filter(Item.library==self)
-        print items.all()
-
-        for polarity, key, operator, value in query_clauses:
-            is_date = is_date_key(key)
-            db_clause = []
-
-            if operator == 'exact':
-                import debug
-                db_clause = [MetaData.key==key and MetaData.value == value]
-            elif operator == 'lessthan':
-                db_clause = [MetaData.key==key and MetaData.value < value]
-            elif operator == 'greaterthan':
-                db_clause = [MetaData.key==key and MetaData.value < value]
-            elif operator == 'has_any':
-                db_clause = [MetaData.key==key]
-
-            if polarity == 'including':
-                items = items.filter(*db_clause)
-            elif polarity == 'excluding':
-                items = items.exclude(*db_clause)
-            else:
-                raise Exception("Invalid polarity clause: %s" % polarity)
-
-        print items.all()
-        return items.all()
-
-        if is_date and value != '*':
-            # this value will be interpreted as a date.
-            v = fuzzy_to_datetime(v)
-
-        if key in BUILT_IN:
-            # attributes that are stored directly onto the model.
-            if key == 'mimetype' and value.endswith('*'):
-                # wildcard mimetype querying
-                first_part = value[:-1]
-                items = items.filter(Item.mimetype.startswith(first_part))
-            elif key == 'mimetype':
-                # exact mimetype querying
-                items = items.filter(getattr(Item, key)==value)
-            elif is_date:
-                if method == 'less':
-                    items = items.filter(getattr(Item, key) < value)
-                elif method == 'greater':
-                    items = items.filter(getattr(Item, key) >= value)
-                else:
-                    # TODO: full fuzzy matching
-                    items = items.filter(getattr(Item, key) == value)
-            else:
-                items = items.filter(getattr(Item, key) == value)
-
-        else:
-            # attributes that are stored on the MetaData table.
-            if v == '*':
-                items = items.filter(MetaData.key==k)
-            else:
-                items = items.filter(MetaData.key==k, MetaData.value==v)
+        return execute_query(items, query)
 
     def add_item(self, engine_id, date_created, url, size, hash, mimetype, metadata, license='restricted'):
         """
