@@ -1,0 +1,15 @@
+.icon-big {
+    vertical-align: bottom;
+    width: 64px;
+    height: 64px;
+}
+
+.icon-small {
+    vertical-align: bottom;
+    width: 32px;
+    height: 32px;
+}
+
+.icon {
+    margin: 3px;
+}

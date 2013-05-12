@@ -16,13 +16,8 @@
         width: 180px;
     }
 
-    .metadata_item .title {
+    .metadata_item .key {
         float: left;
-    }
-
-    .engine_logo {
-        width: 32px;
-        height: 32px;
     }
 </style>
 {% endblock %}
@@ -35,11 +30,11 @@
 
     <strong>Storage engine: </strong>
     {% if data.engine.name == 's3' %}
-        <img class="engine_logo" src="/static/s3_logo.png">
+        <img class="icon" src="/static/amazon_logo.png">
     {% elif data.engine.name == 'dropbox' %}
-        <img class="engine_logo" src="/static/dropbox_logo.jpg">
+        <img class="icon" src="/static/dropbox_logo.png">
     {% elif data.engine.name == 'googledrive' %}
-        <img class="engine_logo" src="/static/drive_logo.png">
+        <img class="icon" src="/static/drive_logo.png">
     {% endif %}
 
     <form method="post" id="metadata_form">
@@ -48,12 +43,12 @@
         <div id="metadata_container">
             {% for key, value in data.get_all_metadata(only_mutable=True) %}
             <div class="metadata_item">
-                <span class="title">{{ key }}</span>
+                <span class="key">{{ key }}</span>
                 <input type="text" value="{{ value }}">
             </div>
             {% endfor %}
         </div>
-        <a href="#" class="greenplus"><img src="/static/greenplus.png"></a><br>
+        <a href="#" class="greenplus"><img class="logo" src="/static/greenplus.png"></a><br>
         <input type="submit">
     </form>
 

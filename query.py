@@ -21,10 +21,10 @@ def execute_query(items, query):
     from models import MetaData
 
     query_clauses = query
-    if isinstance(query, str):
-        query_clauses = compile_query(query.lower())
+    if hasattr(query, 'lower'):
+        query_clauses = parse_query(query.lower())
 
-    for polarity, subclause in query:
+    for polarity, subclause in query_clauses:
         print "--", polarity
         for key, operator, value in subclause:
             print key, operator, value
@@ -35,33 +35,6 @@ def execute_query(items, query):
             items = items.filter(not_(MetaData.key == key and db_clause))
 
     return items
-
-"""
-    is_date = is_date_key(key)
-    db_clause = None
-        for subclause in clause['subclauses']:
-            polarity, operator,
-            if operator in ['exact', '=', '==']:
-                db_clause = MetaData.value == value
-            elif operator in ['before', 'lessthan']:
-                db_clause = MetaData.value < value
-            elif operator == ['after', 'greaterthan']:
-                db_clause = MetaData.value > value
-            elif operator == 'matches':
-                db_clause = do_match(key, value)
-            elif operator == 'is_present':
-                db_clause = True
-
-        if polarity == 'including':
-            items = items.filter(MetaData.key == key and db_clause)
-        elif polarity == 'excluding':
-            items = items.filter(not_(MetaData.key == key and db_clause))
-        else:
-            raise Exception("Invalid polarity clause: %s" % polarity)
-
-    print items.all()
-    return items.all()
-"""
 
 def parse_query(s):
     """
@@ -77,7 +50,10 @@ def parse_query(s):
     clause = Group(polarity + Group(delimitedList(subclause, delim=',')))
 
     LQL = delimitedList(clause, delim=';')
-    return LQL.parseString(s)
+    parsed_obj = LQL.parseString(s)
+
+    parsed_native = eval(str(parsed_obj))
+    return parsed_native
 
 if __name__ == '__main__':
     
@@ -103,7 +79,7 @@ if __name__ == '__main__':
     for query, result in cases:
         parsed = parse_query(query)
         msg = "This query: \n\n%s\n\nreturned: \n\n%s\n\ninstead of:\n\n%s" % (query, result, parsed)
-        assert str(parsed) == str(result), msg
-        execute_query(None, parsed)
+        assert parsed == result, msg
+        #execute_query(None, parsed)
 
     print "All tests pass"

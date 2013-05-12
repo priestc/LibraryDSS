@@ -1,5 +1,6 @@
 .key {
-    color: red;
+    color: brown;
+    text-align: right;
 }
 .value {
     color: blue;
@@ -8,39 +9,57 @@
 .item {
     border: 1px solid black;
     background: #DDDDFF;
-    padding: 5px;
-    margin: 5px;
+    padding: 0px;
+    margin: 10px;
     width: 800px;
+    overflow: hidden;
     position: relative;
     top:0;
     left:0;
 }
 
-.item h3 {
-    margin: 0px;
-    margin-top: 3px;
-    margin-left: 35px;
-    padding: 0px;
+.item .info-icon:hover {
+    cursor: pointer;
 }
 
-.item h4 {
-    margin: 0px;
-    margin-left: 35px;
+.item table.item_header {
+    width: 100%;
+    background: rgb(195, 235, 228);
+    height: 64px;
 }
 
-.mimetype.icon {
-    position: absolute;
-    top: 3px;
+
+
+.item table.item_header td.icon_pane {
+    width: 65px;
+    text-align: center;
+}
+
+.item table.item_header td.manage_pane {
+    width: 45px;
+    text-align: center;
+}
+
+.item table.item_header td.info_pane {
+    text-align: center;
+}
+
+.hidden_pane {
+    display: none;
+}
+
+.item table.all_metadata {
+    border-collapse: collapse;
+}
+
+.item table.all_metadata td {
+    border: 1px solid gray;
+    border-bottom: 0px;
+    width: 100%;
 }
 
 .subtitle {
     color: grey;
-}
-
-.icon {
-    vertical-align: bottom;
-    width: 32px;
-    height: 32px;
 }
 
 a.add_new_query_clause img {
@@ -60,10 +79,4 @@ a.add_new_query_clause img {
 
 .single_clause_template {
     display: none;
-}
-
-.edit_item_link {
-    position: absolute;
-    right: 10px;
-    top: 8px;
 }

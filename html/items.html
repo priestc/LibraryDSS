@@ -19,49 +19,48 @@
         Items returned: {{ data.items_count }}
     </div>
     
-    <ul>
+    <div class="items">
         {% for item in data.library_items %}
-        <li>
-            <div class="item">
-                <div class="edit_item_link">
-                    <a href="/item/{{ item.size }}/{{ item.hash }}">Edit</a>    
-                </div>
-                
-                <img class="mimetype icon" src="/static/{{ item.get_icon() }}_icon.png">
-
-                <h3>
-                    {{ item.get_metadata('title')|default("No Title") }}
-                </h3>
-
-                <h4>
-                    <span class="subtitle">{{ item.get_metadata('subtitle') }}</span>
-                    <span class="date_created">{{ item.get_metadata("date_created") }}</span>
-                </h4>
-
-                <p class="all_metadata">
-                    <table border=1>
+        <div class="item">
+            <table class="item_header">
+                <tr>   
+                    <td class="icon_pane">
+                        <img class="mimetype icon icon-big" src="/static/{{ item.get_icon() }}_icon.png">
+                    </td>
+                    <td class="info_pane">
+                        <span class="title">{{ item.get_metadata('title')|default("No Title") }}</span>
+                        <span class="subtitle">{{ item.get_metadata('subtitle') }}</span>
+                        <span class="date_created">({{ item.get_metadata("date_created") }})</span>
+                        {% if item.size > 50 * 1024 * 1024 %}
+                        <br><span class="size">{{ item.human_size() }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="manage_pane">
+                        {% if item.engine.name == 's3' %}
+                        <img class="storage icon icon-small" src="/static/amazon_logo.png">
+                        {% elif item.engine.name == 'dropbox' %}
+                        <img class="storage icon icon-small" src="/static/dropbox_logo.png">
+                        {% elif item.engine.name == 'googledrive' %}
+                        <img class="storage icon icon-small" src="/static/drive_logo.png">
+                        {% endif %}
+                        <br>
+                        <img class="icon-small info-icon icon" item-id="{{ item.hash }}" src="/static/information_icon.png">
+                    </td>
+                </tr>
+            </table>
+            <div class="hidden_pane" id="pane_{{ item.hash }}">
+                <table class="all_metadata">
                     {% for key, value in item.get_all_metadata(only_mutable=False) %}
-                        <tr>
-                            <td class="key">{{ key }}:</td>
-                            <td class="value">{{ value }}</td>
-                        </tr>
+                    <tr>
+                        <td class="key">{{ key }}:</td>
+                        <td class="value">{{ value }}</td>
+                    </tr>
                     {% endfor %}
-                    </table>
-                </p>
-                <p>
-                    Engine: 
-                    {% if item.engine.name == 's3' %}
-                        <img class="storage icon" src="/static/amazon_logo.png">
-                    {% elif item.engine.name == 'dropbox' %}
-                        <img class="storage icon" src="/static/dropbox_logo.png">
-                    {% elif item.engine.name == 'googledrive' %}
-                        <img class="storage icon" src="/static/drive_logo.png">
-                    {% endif %}
-                </p>
+                </table>
             </div>
-        </li>
+        </div>
         {% endfor %}
-    </ul>
+    </div>
 
     <div class="single_clause_template">
         <select class="polarity">
@@ -127,7 +126,7 @@
             var id = Math.floor(Math.random()*119);
             var template = "<div id=\"" + id + "\" class=\"single_clause\">" + html + "</div>";
             $(".query_clauses").append(template);
-            return id
+            return id;
         }
 
         $(".add_new_query_clause").click(create_query_clause_element);
@@ -135,6 +134,15 @@
         $(".submit_query_button").click(function() {
             var query = query_from_generator($(this));
             window.location.href = "/items?query=" + encodeURIComponent(query);
+        });
+
+        $(".info-icon").click(function(event) {
+            var id = $(this).attr("item-id");
+            $("#pane_" + id).show();
+            event.stopPropagation()
+        });
+        $(document).click(function() {
+            $('.hidden_pane').hide();
         });
     </script>
 {% endblock %}

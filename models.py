@@ -69,6 +69,7 @@ class Library(Base):
 
     def execute_query(self, query, identity=None):        
         items = session.query(Item).join(MetaData).filter(Item.library==self)
+        import debug
         return execute_query(items, query)
 
     def add_item(self, engine_id, date_created, url, size, hash, mimetype, metadata, license='restricted'):
@@ -181,10 +182,8 @@ class Item(Base):
 
         return sorted([(key, value) for key, value in meta.items()], key=lambda x: x[0])
 
-    def as_json(self):
-        data = {"origin": self.origin, "hash": self.hash, "size": self.size}
-        data.update(self.get_metadata())
-        return json.dumps(data)
+    def todict(self):
+        return self.get_all_metadata()
 
 class MetaData(Base):
     id = Column(Integer, primary_key=True)

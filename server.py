@@ -1,8 +1,8 @@
 import httplib2
-import json
 
 from models import Library, UploadEngine, Item
 from giotto.primitives import ALL_DATA, USER, LOGGED_IN_USER
+from giotto.utils import jsonify
 from giotto import get_config
 
 from apiclient.discovery import build
@@ -13,9 +13,9 @@ from giotto.control import Redirection
 from utils import sizeof_fmt
 
 from sqlalchemy import func
+session = get_config('session')
 
 def home(user=LOGGED_IN_USER):
-    session = get_config('session')
     library_count = session.query(Library).count()
     item_count = session.query(Item).count() or 0
     total_size = session.query(func.sum(Item.size))[0][0] or 0
@@ -40,21 +40,23 @@ def query(query, identity=USER):
 
 def items(query=None, user=LOGGED_IN_USER, identity=USER):
     """
-    Render the library management page.
+    Given an LQL query and a library identity, return the items that match.
     """
-    query_json = '[]'
-    if query:
-        from query import compile_query
-        query_json = json.dumps(compile_query(query))
-
     if not identity and (user and user.username):
+        # in the case of an authenticated request through the browser;
+        # no 'identity' will be sent, so just go by username.
         identity = user.username
-
+    
     library = Library.get(identity)
+
+    items = library.items
+    query_json = '[]'
+
     if query:
-        items = library.execute_query(query) 
-    else:
-        items = library.items
+        from query import execute_query, parse_query
+        items = session.query(Item).filter_by(library=library)
+        items = parse_query(query)
+        query_json = jsonify(items)
 
     return {
         'parsed_query_json': query_json,
