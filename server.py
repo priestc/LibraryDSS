@@ -1,7 +1,8 @@
 import httplib2
 
-from models import Library, UploadEngine, Item
+from models import Library, UploadEngine, Item, MetaData
 from giotto.primitives import ALL_DATA, USER, LOGGED_IN_USER
+from giotto.exceptions import NotAuthorized
 from giotto.utils import jsonify
 from giotto import get_config
 
@@ -19,7 +20,12 @@ def home(user=LOGGED_IN_USER):
     library_count = session.query(Library).count()
     item_count = session.query(Item).count() or 0
     total_size = session.query(func.sum(Item.size))[0][0] or 0
-    return {'user': user, 'library_count': library_count, 'item_count': item_count, 'total_size': sizeof_fmt(total_size)}
+    return {
+        'user': user,
+        'library_count': library_count,
+        'item_count': item_count,
+        'total_size': sizeof_fmt(total_size)
+    }
 
 def start_publish(size, hash, identity=USER):
     """
@@ -31,12 +37,16 @@ def start_publish(size, hash, identity=USER):
 
 def finish_publish(url, size, hash, date_created, mimetype, engine_id=None, metadata=ALL_DATA, identity=USER):
     library = Library.get(identity)
-    library.add_item(url=url, engine_id=engine_id, date_created=date_created, mimetype=mimetype, size=size, hash=hash, metadata=metadata)
+    library.add_item(
+        url=url,
+        engine_id=engine_id,
+        date_created=date_created,
+        mimetype=mimetype,
+        size=size,
+        hash=hash,
+        metadata=metadata
+    )
     return "OK"
-
-def query(query, identity=USER):
-    library = Library.get(identity)
-    return library.execute_query(query)
 
 def items(query=None, user=LOGGED_IN_USER, identity=USER):
     """
@@ -47,15 +57,24 @@ def items(query=None, user=LOGGED_IN_USER, identity=USER):
         # no 'identity' will be sent, so just go by username.
         identity = user.username
     
-    library = Library.get(identity)
+    if not identity:
+        raise NotAuthorized()
 
-    items = library.items
+    library = Library.get(identity)
+    items = session.query(Item).join(MetaData).filter(Item.library==library)
     query_json = '[]'
 
     if query:
         from query import execute_query, parse_query
-        items = session.query(Item).filter_by(library=library).all()
-        query_json = jsonify(parse_query(query))
+        parsed = parse_query(query)
+        items = execute_query(items, parsed)
+        # this json representation of the query that was just used to filter
+        # the items will be passed back to the template as a json string
+        # so the front end can render the query widget. A string representation
+        # is not passed because there is no way to parse LQL in javascript (yet).
+        query_json = jsonify(parsed)
+
+    items = items.all()
 
     return {
         'parsed_query_json': query_json,

@@ -1,21 +1,8 @@
 function fill_in_generator(query) {
     $(".single_clause").remove();
-    $.each(query, function(index, clause) {
-        var id = create_query_clause_element();
-        var polarity = clause[0],
-            key = clause[1],
-            operator = clause[2],
-            value = clause[3];
-
-        console.log(id, polarity, key, operator, value)
-
-        $("#" + id + " select.polarity").val(polarity);
-        $("#" + id + " select.operator").val(operator);
-        $("#" + id + " input.key").val(key);
-        $("#" + id + " input.value").val(value);
+    $.each(query, function(i, clause) {
+        create_query_clause_element(clause);
     });
-
-    create_query_clause_element();
 }
 
 function query_obj_from_html(submit_element) {
@@ -34,13 +21,36 @@ function query_obj_from_html(submit_element) {
             var key = subclause.find('input.key').val();
             var value = subclause.find('input.value').val();
             var operator = subclause.find('select.operator').val();
-            subclause.push([key, operator, value]);
+            subclauses.push([key, operator, value]);
         });
         
         query.push([polarity, subclauses]);
     });
 
     return query;
+}
+
+function query_obj_to_string(query_obj) {
+    clauses = [];
+    $.each(query_obj, function(i, clause) {
+        // each clause ('including, [double list])
+        var polarity = clause[0];
+        var subclauses = clause[1];
+        var rendered_subclauses = [];
+        $.each(subclauses, function(i, sc) {
+            var rendered = sc.join(' ');
+            rendered_subclauses.push(rendered);
+        });
+        str_subclauses = rendered_subclauses.join(',');
+        var clause_str = polarity + ' ' + str_subclauses;
+        clauses.push(clause_str);
+    });
+    return clauses.join(';');
+}
+
+function lql_from_html() {
+    var qo = query_obj_from_html($(".submit_query_button"));
+    return query_obj_to_string(qo);
 }
 
 function create_query_clause_element(initial_data) {
@@ -97,7 +107,7 @@ $(function() {
     $(".add_new_query_clause").click(create_query_clause_element);
 
     $(".submit_query_button").click(function() {
-        var query = query_obj_from_html($(this));
+        var query = query_obj_to_string(query_obj_from_html($(this)));
         window.location.href = "/items?query=" + encodeURIComponent(query);
     });
 

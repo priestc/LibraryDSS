@@ -1,7 +1,6 @@
-from pyparsing import (Word, alphas, alphanums,oneOf, Keyword, Optional, Group,
-    QuotedString, StringEnd, ZeroOrMore, OneOrMore, Suppress, delimitedList)
+from pyparsing import Word, alphanums,oneOf, Group, QuotedString, delimitedList
 
-from utils import is_date_key
+from utils import is_date_key, fuzzy_to_datetime
 from sqlalchemy import not_
 
 def do_match(key, value):
@@ -18,21 +17,35 @@ def execute_query(items, query):
     Given an LQL query, run that query against the given library and return
     all the matching items.
     """
-    from models import MetaData
+    from models import MetaData, Item, BUILT_IN
 
     query_clauses = query
     if hasattr(query, 'lower'):
         query_clauses = parse_query(query.lower())
 
     for polarity, subclause in query_clauses:
-        print "--", polarity
+        #print "--", polarity
         for key, operator, value in subclause:
-            print key, operator, value
+            #print key, operator, value
+            if is_date_key(key):
+                value = fuzzy_to_datetime(value)
 
-        if polarity == 'including':
-            items = items.filter(MetaData.key == key and db_clause)
-        elif polarity == 'excluding':
-            items = items.filter(not_(MetaData.key == key and db_clause))
+            if key in BUILT_IN:
+                if operator == 'exact':
+                    q = getattr(Item, key) == value
+                    items = items.filter(q)
+                else:
+                    raise NotImplementedError("no other operators implemented yet")
+            else:
+                if operator == 'exact':
+                    db_clause = MetaData.value == value
+                else:
+                    raise NotImplementedError("no other operators implemented yet")
+
+                if polarity == 'including':
+                    items = items.filter(MetaData.key == key and db_clause)
+                elif polarity == 'excluding':
+                    items = items.filter(not_(MetaData.key == key and db_clause))
 
     return items
 
@@ -42,7 +55,7 @@ def parse_query(s):
     """
     identifier = Word("_"+"."+alphanums)
     polarity = oneOf("including excluding", caseless=True)
-    operator = oneOf("exact = == matches lessthan greaterthan after before", caseless=True)
+    operator = oneOf("after exact = == matches lessthan greaterthan after before is_present", caseless=True)
     value = QuotedString("'") | QuotedString('"') | identifier
     key = identifier
 
@@ -63,8 +76,8 @@ if __name__ == '__main__':
             [['including', [['mime.type', '==', 'video/*']]]]
         ],
         [
-            "EXCLUDING mimetype ExAcT balls, fart exact 'toot butt'",
-            [['excluding', [['mimetype', 'exact', 'balls'], ['fart', 'exact', 'toot butt']]]]
+            "EXCLUDING mimetype ExAcT 'text/plain', key exact 'string value'",
+            [['excluding', [['mimetype', 'exact', 'text/plain'], ['key', 'exact', 'string value']]]]
         ],
         [
             'INCLUDING source exact DVD; EXCLUDING date == 2006',

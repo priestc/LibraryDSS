@@ -69,8 +69,7 @@ class Library(Base):
 
     def execute_query(self, query, identity=None):        
         items = session.query(Item).join(MetaData).filter(Item.library==self)
-        import debug
-        return execute_query(items, query)
+        return execute_query(items, query).all()
 
     def add_item(self, engine_id, date_created, url, size, hash, mimetype, metadata, license='restricted'):
         """
@@ -121,7 +120,7 @@ class Item(Base):
         return ret
 
     def __repr__(self):
-        return "[%s]" % (self.date_created) #, self.hash, self.mimetype)
+        return "[%s]" % (self.get_metadata('title')) #, self.hash, self.mimetype)
 
     def get_icon(self):
         """
@@ -193,7 +192,7 @@ class MetaData(Base):
     item = relationship('Item', primaryjoin="Item.hash==MetaData.item_id", backref="metadata")
 
     def __repr__(self):
-        return "%s %s=%s" % (self.item, self.key, self.value)
+        return "[id=%s] %s=%s" % (self.item.hash[:5]+ '...', self.key, self.value)
 
     def __init__(self, **kwargs):
         if is_date_key(kwargs['key']):

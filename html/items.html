@@ -92,7 +92,7 @@
                 <table class="all_metadata">
                     {% for key, value in item.get_all_metadata(only_mutable=False) %}
                     <tr>
-                        <td class="key">{{ key }}:</td>
+                        <th class="key">{{ key }}:</th>
                         <td class="value">{{ value }}</td>
                     </tr>
                     {% endfor %}
