@@ -1,21 +1,92 @@
-.key {
-    color: brown;
-    text-align: right;
+#content {
+    width: 80%;
+    background: white;
+    border: 1px solid gray;
+    margin: 0 auto 0 auto;
+    padding: 5px;
 }
-.value {
-    color: blue;
+
+h2 {
+    margin-top: 0px;
+}
+
+.query_container {
+    border: 1px solid brown;
+    background: #DDCC44;
+    width: 80%;
+    margin: 0px auto 0 auto;
+    text-align: center;
+    padding: 10px
+}
+
+.query_container .single_clause {
+    border: 0px solid black;
+    overflow: hidden;
+}
+
+.query_container .subclauses {
+    overflow: hidden;
+}
+
+.query_container .subclause {
+    border: 0px solid red;
+}
+
+.query_container .single_clause .row {
+    float: left;
+}
+
+.query_container input[type=text] {
+    width: 200px;
+}
+
+.query_container select {
+    height: 32px;
+}
+
+.query_container table.bottom_row {
+    width: 100%;
+}
+
+.query_container table.bottom_row td {
+    width: 50%;
+    border: 0px solid black;
+}
+
+.query_container .bottom_row .view {
+    float: right
+}
+
+.submit_query_button {
+    font-size: x-large;
+    cursor: pointer;
+    background-color: rgb(195, 235, 228);
+    border-radius: 3px;
+}
+
+.item_container {
+    margin: 10px;
+    margin-top: 30px;
 }
 
 .item {
     border: 1px solid black;
     background: #DDDDFF;
     padding: 0px;
-    margin: 10px;
-    width: 800px;
+    margin: 10px auto 0 auto;
+    width: 100%;
     overflow: hidden;
     position: relative;
-    top:0;
-    left:0;
+    top: 0;
+    left: 0;
+}
+
+.item table.all_metadata .key {
+    color: brown;
+    text-align: right;
+}
+.item table.all_metadata .value {
+    color: blue;
 }
 
 .item .info-icon:hover {
@@ -27,8 +98,6 @@
     background: rgb(195, 235, 228);
     height: 64px;
 }
-
-
 
 .item table.item_header td.icon_pane {
     width: 65px;
@@ -44,10 +113,6 @@
     text-align: center;
 }
 
-.hidden_pane {
-    display: none;
-}
-
 .item table.all_metadata {
     border-collapse: collapse;
 }
@@ -58,25 +123,10 @@
     width: 100%;
 }
 
-.subtitle {
+.item .subtitle {
     color: grey;
 }
 
-a.add_new_query_clause img {
-    width: 32px;
-    height: 32px
-}
-
-.query_container {
-    background: #DD1144;
-    padding: 3px;
-    margin: 5px;
-}
-
-.query_container input[type=text] {
-    width: 200px
-}
-
-.single_clause_template {
+.item .hidden_pane {
     display: none;
 }

@@ -2,28 +2,68 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="/static/items.css">
+<script src="/static/items.js"></script>
 {% endblock %}
 
 {% block content %}
     <h1>Library Media</h1>
+    
     <div class="query_container">
-        <h3>Query</h3>
+        <h2>Query</h2>
         <div class="query_clauses">
-            
+            <!-- Will get filled in by javascript -->
         </div>
-        <a href="#" class="add_new_query_clause"><img src="/static/greenplus.png"></a><br>
-        <button class="submit_query_button">Submit</button>
+
+        <!--
+        <button>Created By me</button>
+        <button>Not Created by me</button>
+        <button>Published Today</button>
+        <button>Video</button>
+        <button>Picture</button>
+        <button>Text</button>
+        <button>Audio</button>
+        <button>Including</button>-->
+
+        <button class="submit_query_button">View</button>
+
     </div>
 
-    <div>
-        Items returned: {{ data.items_count }}
+    <div class="clause template">
+        <div class="polarity row">
+            <select class="polarity">
+                <option value="including">INCLUDING</option>
+                <option value="excluding">EXCLUDING</option>
+            </select>
+        </div>
+        <div class="subclauses row"></div>
+        <div class="new_subclause row">
+            <a href="#" class="add_new_subclause">
+                <img class="icon icon-tiny" src="/static/greenplus.png">
+            </a>
+        </div>
     </div>
-    
-    <div class="items">
+
+    <div class="subclause template">
+        <input type="text" class="key">
+        <select class="operator">
+            <option value="exact">Exact</option>
+            <option value="greaterthan">Greater Than</option>
+            <option value="lessthan">Less Than</option>
+            <option value="is_present">Is Present</option>
+        </select>
+        <input type="text" class="value">
+        <a href="#" class="delete_subclause">
+            <img class="icon icon-tiny" src="/static/red_x.svg">
+        </a>
+    </div>
+
+    <div class="item_container">
+        <h2>Items Matched: {{ data.items_count }}</h2>
+        
         {% for item in data.library_items %}
         <div class="item">
             <table class="item_header">
-                <tr>   
+                <tr>
                     <td class="icon_pane">
                         <img class="mimetype icon icon-big" src="/static/{{ item.get_icon() }}_icon.png">
                     </td>
@@ -62,87 +102,7 @@
         {% endfor %}
     </div>
 
-    <div class="single_clause_template">
-        <select class="polarity">
-            <option value="including">INCLUDING</option>
-            <option value="excluding">EXCLUDING</option>
-        </select>
-        <input type="text" class="key">
-        <select class="operator">
-            <option value="exact">Exact</option>
-            <option value="greaterthan">Greater Than</option>
-            <option value="lessthan">Less Than</option>
-            <option value="is_present">Is Present</option>
-        </select>
-        <input type="text" class="value">
-    </div>
-
     <script>
         fill_in_generator({{ data.parsed_query_json }});
-
-        function fill_in_generator(query) {
-            $(".single_clause").remove();
-            $.each(query, function(index, clause) {
-                var id = create_query_clause_element();
-                var polarity = clause[0],
-                    key = clause[1],
-                    operator = clause[2],
-                    value = clause[3];
-
-                console.log(id, polarity, key, operator, value)
-
-                $("#" + id + " select.polarity").val(polarity);
-                $("#" + id + " select.operator").val(operator);
-                $("#" + id + " input.key").val(key);
-                $("#" + id + " input.value").val(value);
-            });
-
-            create_query_clause_element();
-        }
-
-        function query_from_generator(submit_element) {
-            // Generate a LQL query based on the filter html widget.
-            // Passed in must be the select button element of the widget.
-            var clauses = submit_element.parent().find('.single_clause');
-            var query = '';
-
-            clauses.each(function(index, e) {
-                var e = $(e);
-                var key = e.find('input.key').val();
-                var value = e.find('input.value').val();
-                var operator = e.find('select.operator').val();
-                var polarity = e.find('select.polarity').val();
-                
-                if(key) {
-                    var this_clause = polarity + ' ' + key + ' ' + operator + ' ' + value + '; ';
-                    query += this_clause;
-                }
-            });
-            return query;
-        }
-
-        function create_query_clause_element() {
-            var html = $(".single_clause_template").html();
-            var id = Math.floor(Math.random()*119);
-            var template = "<div id=\"" + id + "\" class=\"single_clause\">" + html + "</div>";
-            $(".query_clauses").append(template);
-            return id;
-        }
-
-        $(".add_new_query_clause").click(create_query_clause_element);
-
-        $(".submit_query_button").click(function() {
-            var query = query_from_generator($(this));
-            window.location.href = "/items?query=" + encodeURIComponent(query);
-        });
-
-        $(".info-icon").click(function(event) {
-            var id = $(this).attr("item-id");
-            $("#pane_" + id).show();
-            event.stopPropagation()
-        });
-        $(document).click(function() {
-            $('.hidden_pane').hide();
-        });
     </script>
 {% endblock %}

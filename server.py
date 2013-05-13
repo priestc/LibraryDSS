@@ -54,9 +54,8 @@ def items(query=None, user=LOGGED_IN_USER, identity=USER):
 
     if query:
         from query import execute_query, parse_query
-        items = session.query(Item).filter_by(library=library)
-        items = parse_query(query)
-        query_json = jsonify(items)
+        items = session.query(Item).filter_by(library=library).all()
+        query_json = jsonify(parse_query(query))
 
     return {
         'parsed_query_json': query_json,

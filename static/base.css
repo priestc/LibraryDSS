@@ -1,3 +1,20 @@
+body {
+    background: beige;
+    padding: 0px;
+    margin: 0px;
+    margin-bottom: 10px;
+}
+
+h1 {
+    text-align: center;
+}
+
+nav {
+    background: beige;
+    padding: 10px;
+    border: 0px solid black
+}
+
 .icon-big {
     vertical-align: bottom;
     width: 64px;
@@ -10,6 +27,16 @@
     height: 32px;
 }
 
+.icon-tiny {
+    vertical-align: bottom;
+    width: 16px;
+    height: 16px;
+} 
+
 .icon {
     margin: 3px;
+}
+
+.template {
+    display: none;
 }
