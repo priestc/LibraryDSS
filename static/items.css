@@ -12,6 +12,7 @@ h2 {
 
 .query_container {
     border: 1px solid brown;
+    border-radius: 5px;
     background: #DDCC44;
     width: 80%;
     margin: 0px auto 0 auto;
@@ -32,36 +33,18 @@ h2 {
     border: 0px solid red;
 }
 
-.query_container .single_clause .row {
-    float: left;
+.query_container td.ends {
+    vertical-align: top;
+    width: 10%;
 }
 
 .query_container input[type=text] {
     width: 200px;
 }
 
-.query_container select {
-    height: 32px;
-}
-
-.query_container table.bottom_row {
-    width: 100%;
-}
-
-.query_container table.bottom_row td {
-    width: 50%;
-    border: 0px solid black;
-}
-
-.query_container .bottom_row .view {
-    float: right
-}
-
-.submit_query_button {
+.query_container .subclause_blank {
+    text-align: left;
     font-size: x-large;
-    cursor: pointer;
-    background-color: rgb(195, 235, 228);
-    border-radius: 3px;
 }
 
 .item_container {
@@ -69,8 +52,24 @@ h2 {
     margin-top: 30px;
 }
 
+.ui-add {
+    color: green;
+    font-weight: bold;
+}
+
+.ui-delete {
+    color: red;
+    font-weight: bold;
+}
+
+.ui-view {
+    color: blue;
+    font-weight: bold;
+}
+
 .item {
-    border: 1px solid black;
+    border: 1px solid navy;
+    border-radius: 5px;
     background: #DDDDFF;
     padding: 0px;
     margin: 10px auto 0 auto;
@@ -129,7 +128,7 @@ h2 {
 }
 
 .item .subtitle {
-    color: grey;
+    font-style: italic;
 }
 
 .item .hidden_pane {

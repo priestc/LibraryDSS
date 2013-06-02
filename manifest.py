@@ -79,14 +79,19 @@ manifest = ProgramManifest({
         view=ForceJSONView
     ),
     'configure': GiottoProgram(
-        # API endpoint for changing library settings.
+        description="API endpoint for changing library settings.",
         model=[configure],
         view=BasicView(
             html=jinja_template("configure.html"),
         ),
     ),
+    'connections': GiottoProgram(
+        view=BasicView(
+            html=jinja_template("connections.html")
+        )
+    ),
     'items': AuthenticationProgram(
-        # HTML page for looking at items and querying them
+        description="HTML page for looking at items and querying them",
         model=[items],
         view=BasicView(
             html=jinja_template("items.html"),

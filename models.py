@@ -31,7 +31,7 @@ class Distribution(Base):
     library_id = Column(ForeignKey("giotto_library.identity"))
     library = relationship('Library', backref="disributions")
     identities = Column(String) # people these files are shared with
-    query = Column(String) # the query that defines the files
+    query = Column(PickleType) # the query object that defines the files
     license = Column(String) # the license that gets applied to the files when moved.
 
 class Library(Base):

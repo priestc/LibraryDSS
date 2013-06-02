@@ -23,27 +23,29 @@
         <button>Text</button>
         <button>Audio</button>
         <button>Including</button>-->
-
-        <button class="submit_query_button">View</button>
+        
+        <button class="button-big add_new_query_clause ui-add">+</button>
+        <button class="button-big submit_query_button ui-view">View</button>
 
     </div>
 
-    <div class="clause template">
-        <div class="polarity row">
-            <select class="polarity">
-                <option value="including">INCLUDING</option>
-                <option value="excluding">EXCLUDING</option>
-            </select>
-        </div>
-        <div class="subclauses row"></div>
-        <div class="new_subclause row">
-            <a href="#" class="add_new_subclause">
-                <img class="icon icon-tiny" src="/static/greenplus.png">
-            </a>
-        </div>
-    </div>
+    <table class="clause template">
+        <tr>
+            <td class="ends">
+                <select class="polarity">
+                    <option value="including">INCLUDING</option>
+                    <option value="excluding">EXCLUDING</option>
+                </select>
+            </td>
+            <td><div class="subclauses"></div></td>
+            <td class="ends">
+                <button class="add_new_subclause ui-add">+</button>
+            </td>
+        </tr>
+    </table>
 
     <div class="subclause template">
+        <img class="icon icon-tiny placeholder"> <!-- for symmetry -->
         <input type="text" class="key">
         <select class="operator">
             <option value="exact">Exact</option>
@@ -52,9 +54,7 @@
             <option value="is_present">Is Present</option>
         </select>
         <input type="text" class="value">
-        <a href="#" class="delete_subclause">
-            <img class="icon icon-tiny" src="/static/red_x.svg">
-        </a>
+        <button class="delete_subclause ui-delete">&#10005;</button>
     </div>
 
     <div class="item_container">

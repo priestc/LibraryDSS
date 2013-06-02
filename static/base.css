@@ -9,6 +9,7 @@ body {
     width: 80%;
     background: white;
     border: 1px solid gray;
+    border-radius: 5px;
     margin: 0 auto 0 auto;
     padding: 5px;
 }
@@ -24,19 +25,19 @@ nav {
 }
 
 .icon-big {
-    vertical-align: bottom;
+    vertical-align: middle;
     width: 64px;
     height: 64px;
 }
 
 .icon-small {
-    vertical-align: bottom;
+    vertical-align: middle;
     width: 32px;
     height: 32px;
 }
 
 .icon-tiny {
-    vertical-align: bottom;
+    vertical-align: middle;
     width: 16px;
     height: 16px;
 } 
@@ -47,4 +48,15 @@ nav {
 
 .template {
     display: none;
+}
+
+.placeholder {
+    visibility: hidden;
+}
+
+.button-big {
+    cursor: pointer;
+    padding: 5px;
+    margin: 10px;
+    font-size: x-large;
 }

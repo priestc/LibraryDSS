@@ -24,28 +24,34 @@ def execute_query(items, query):
         query_clauses = parse_query(query.lower())
 
     for polarity, subclause in query_clauses:
-        #print "--", polarity
         for key, operator, value in subclause:
-            #print key, operator, value
             if is_date_key(key):
                 value = fuzzy_to_datetime(value)
 
             if key in BUILT_IN:
                 if operator == 'exact':
-                    q = getattr(Item, key) == value
-                    items = items.filter(q)
+                    db_clause = getattr(Item, key) == value
+                elif operator in ['after', 'greaterthan']:
+                    db_clause = getattr(Item, key) > value
+                elif operator in ['before', 'lessthan']:
+                    db_clause = getattr(Item, key) < value
                 else:
                     raise NotImplementedError("no other operators implemented yet")
             else:
+                db_clause = MetaData.key == key
                 if operator == 'exact':
-                    db_clause = MetaData.value == value
+                    db_clause = MetaData.value == value and db_clause
+                elif operator in ['after', 'greaterthan']:
+                    db_clause = MetaData.value > value and db_clause
+                elif operator in ['before', 'lessthan']:
+                    db_clause = MetaData.value < value and db_clause
                 else:
                     raise NotImplementedError("no other operators implemented yet")
 
-                if polarity == 'including':
-                    items = items.filter(MetaData.key == key and db_clause)
-                elif polarity == 'excluding':
-                    items = items.filter(not_(MetaData.key == key and db_clause))
+            if polarity == 'including':
+                items = items.filter(db_clause)
+            elif polarity == 'excluding':
+                items = items.filter(not_(db_clause))
 
     return items
 

@@ -56,7 +56,7 @@ function lql_from_html() {
 function create_query_clause_element(initial_data) {
     var id = Math.floor(Math.random()*119);
     var html = $(".clause.template").html();
-    var clause = $("<div id=\"c" + id + "\" class=\"single_clause\">" + html + "</div>");
+    var clause = $("<table id=\"c" + id + "\" class=\"single_clause\">" + html + "</table>");
     $(".query_clauses").append(clause);
 
     clause.find("a.add_new_subclause").click(function() {
@@ -78,9 +78,17 @@ function create_subclause(id, initial_data) {
     var html = $(".subclause.template").html();
     var subclause = $("<div class=\"subclause\">" + html + "</div>");
     $("#c" + id + " .subclauses").append(subclause);
-    
+
     subclause.find("a.delete_subclause").click(function() {
-        subclause.remove()
+        var container = $("#c" + id + " .subclauses");
+        var num_left = container.children().length;
+        if(num_left == 2) {
+            subclause.remove();
+            subclause.find("img").css("border", "1px solid blue");
+        } else if(num_left > 2) {
+            subclause.remove();
+        }
+
     });
 
     if(initial_data) {
@@ -104,7 +112,9 @@ $(function() {
         create_query_clause_element(clause);
     });
 
-    $(".add_new_query_clause").click(create_query_clause_element);
+    $(".add_new_query_clause").click(function() {
+        create_query_clause_element();
+    });
 
     $(".submit_query_button").click(function() {
         var query = query_obj_to_string(query_obj_from_html($(this)));
