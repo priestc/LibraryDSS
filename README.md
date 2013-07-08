@@ -27,4 +27,4 @@ More Information
 ----------------
 Watch this presentation describing the protocol in pictures.
 
-https://docs.google.com/presentation/d/1OxoolWUo2iY_ohxG_HHxd1gQTm3JA52pvWRnefl9IlA/pub?start=false&loop=false&delayms=3000#slide=id.g19aa58f56_0425
+https://docs.google.com/presentation/d/1OxoolWUo2iY_ohxG_HHxd1gQTm3JA52pvWRnefl9IlA/pub?start=false&loop=false&delayms=3000#slide=id.p
