@@ -46,14 +46,21 @@
 
     <div class="subclause template">
         <img class="icon icon-tiny placeholder"> <!-- for symmetry -->
-        <input type="text" class="key">
-        <select class="operator">
-            <option value="exact">Exact</option>
-            <option value="greaterthan">Greater Than</option>
-            <option value="lessthan">Less Than</option>
-            <option value="is_present">Is Present</option>
-        </select>
-        <input type="text" class="value">
+        <input type="text" class="key" list="keys">
+        <datalist>
+            {% for value in data.keys %}
+            <option value="{{ value }}">
+            {% endfor %}
+        </datalist>
+        <input type="text" class="operator" list="operators">
+        <datalist id="operators">
+            <option value="exact">
+            <option value="greaterthan">
+            <option value="lessthan">
+            <option value="matches">
+            <option value="ispresent">
+        </datalist>
+        <input type="text" class="value" list="values">
         <button class="delete_subclause ui-delete">&#10005;</button>
     </div>
 

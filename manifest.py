@@ -11,7 +11,7 @@ from models import Item, Library, configure
 from client import publish, query
 from server import (finish_publish, start_publish, items, backup,
     settings, migrate_off_engine, update_engine, migrate_onto_engine, home,
-    edit_item)
+    edit_item, autocomplete)
 
 from config import project_path
 
@@ -61,16 +61,22 @@ manifest = ProgramManifest({
             ),
         ),
     }),
+    'ui': ProgramManifest({
+        'autocomplete': GiottoProgram(
+            model=[autocomplete],
+            view=BasicView(),
+        )
+    }),
     'auth': create_auth_manifest(
         post_register_callback=post_register_callback,
     ),
     'startPublish': GiottoProgram(
-        controller=['http-post'],
+        controllers=['http-post'],
         model=[start_publish],
         view=ForceJSONView,
     ),
     'completePublish': GiottoProgram(
-        controller=['http-post'],
+        controllers=['http-post'],
         model=[finish_publish, "OK"],
         view=BasicView,
     ),

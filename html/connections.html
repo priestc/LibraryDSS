@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<script type="text/javascript" src="/static/jquery.qrcode.min.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/grid.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/version.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/detector.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/formatinf.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/errorlevel.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/bitmat.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/datablock.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/bmparser.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/datamask.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/rsdecoder.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/gf256poly.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/gf256.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/decoder.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/qrcode.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/findpat.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/alignpat.js"></script>
+<script type="text/javascript" src="/static/jsqrcode/databr.js"></script>
+{% endblock %}
+
+{% block content %}
+<div id="qrcode"></div>
+
+<script>
+    $('#qrcode').qrcode({{ identity }});
+</script>
+{% endblock %}

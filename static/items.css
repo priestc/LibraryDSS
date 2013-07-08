@@ -52,6 +52,10 @@ h2 {
     margin-top: 30px;
 }
 
+.operator {
+    text-align: center;
+}
+
 .ui-add {
     color: green;
     font-weight: bold;

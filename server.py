@@ -19,7 +19,7 @@ session = get_config('session')
 def home(user=LOGGED_IN_USER):
     library_count = session.query(Library).count()
     item_count = session.query(Item).count() or 0
-    total_size = session.query(func.sum(Item.size))[0][0] or 0
+    total_size = 0 #session.query(func.sum(Item.size))[0][0] or 0
     return {
         'user': user,
         'library_count': library_count,
@@ -80,6 +80,7 @@ def items(query=None, user=LOGGED_IN_USER, identity=USER):
         'parsed_query_json': query_json,
         'library_items': items,
         'items_count': len(items),
+        'keys': library.all_keys(),
     }
 
 def settings(user=LOGGED_IN_USER):
@@ -132,3 +133,9 @@ def migrate_onto_engine(engine_id, user=LOGGED_IN_USER):
                     .filter(Library.identity==user.username).first()
     engine.migrate_onto()
     return Redirection('/settings')
+
+def autocomplete(dimension, value):
+    if dimension == 'key':
+        return MetaData.all_values_for_key(value)
+
+    raise InvalidInput("Ivalid dimension")

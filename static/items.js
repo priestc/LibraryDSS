@@ -1,12 +1,16 @@
 function fill_in_generator(query) {
     $(".single_clause").remove();
+    if(query.length == 0) {
+        create_query_clause_element();
+        return
+    }
     $.each(query, function(i, clause) {
         create_query_clause_element(clause);
     });
 }
 
 function query_obj_from_html(submit_element) {
-    // Generate a LQL query based on the filter html widget.
+    // Generate a LQL 'query object' based on the filter html widget.
     // Passed in must be the select button element of the widget.
     var clauses = submit_element.parent().find('.single_clause');
     var query = [];
@@ -31,6 +35,7 @@ function query_obj_from_html(submit_element) {
 }
 
 function query_obj_to_string(query_obj) {
+    // convert a 'query object' into human readable LQL text.
     clauses = [];
     $.each(query_obj, function(i, clause) {
         // each clause ('including, [double list])
@@ -100,6 +105,7 @@ function create_subclause(id, initial_data) {
 
 $(function() {
     $(".add_clause_buttons button").click(function() {
+        // shortcut buttons to quickly add subqueries
         var button = $(this);
         var clause;
         if(button.text() == "Including") {
