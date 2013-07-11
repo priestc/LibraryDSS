@@ -22,6 +22,5 @@ jinja2_env = Environment(loader=FileSystemLoader(os.path.join(project_path, 'htm
 debug = True
 error_template = None
 
-server_url = "http://localhost:5000"
 dropbox_app_type = 'dropbox'
 from secrets import *
