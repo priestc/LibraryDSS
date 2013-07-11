@@ -1,2 +1,6 @@
 iso8601
 git+https://github.com/priestc/python-lql.git
+boto
+filechunkio
+dropbox
+google-api-python-client
