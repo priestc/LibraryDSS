@@ -7,8 +7,6 @@ import requests
 import mimetypes
 import logging
 
-import tomlpython
-
 from giotto.primitives import ALL_DATA
 
 from giotto_s3.upload import upload as upload_s3
