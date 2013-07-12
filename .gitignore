@@ -36,4 +36,4 @@ nosetests.xml
 
 file.db
 config.py
-secret.py
+secrets.py
