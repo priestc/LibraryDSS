@@ -19,7 +19,7 @@ project_path = os.path.dirname(os.path.abspath(__file__))
 from jinja2 import Environment, FileSystemLoader
 jinja2_env = Environment(loader=FileSystemLoader(os.path.join(project_path, 'html')))
 
-debug = False
+debug = True
 error_template = "error.html"
 
 dropbox_app_type = 'dropbox'

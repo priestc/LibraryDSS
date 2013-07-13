@@ -9,9 +9,10 @@ from giotto import get_config
 
 from models import Item, Library, configure
 from client import publish, query
-from server import (finish_publish, start_publish, items, backup,
-    settings, migrate_off_engine, update_engine, migrate_onto_engine, home,
-    edit_item, autocomplete)
+#from server import (finish_publish, start_publish, items, backup,
+#    settings, migrate_off_engine, update_engine, migrate_onto_engine, home,
+#    edit_item, autocomplete, connections)
+import server
 
 from config import project_path
 
@@ -41,10 +42,10 @@ def post_register_callback(user):
     session.commit()
 
 manifest = ProgramManifest({
-    '': 'home',
+    '': '/home',
     'home': GiottoProgram(
         input_middleware=[AuthenticationMiddleware],
-        model=[home],
+        model=[server.home],
         view=BasicView(
             html=jinja_template('home.html'),
         ),
@@ -63,7 +64,7 @@ manifest = ProgramManifest({
     }),
     'ui': ProgramManifest({
         'autocomplete': GiottoProgram(
-            model=[autocomplete],
+            model=[server.autocomplete],
             view=BasicView(),
         )
     }),
@@ -72,33 +73,37 @@ manifest = ProgramManifest({
     ),
     'startPublish': GiottoProgram(
         controllers=['http-post'],
-        model=[start_publish],
+        model=[server.start_publish],
         view=ForceJSONView,
     ),
     'completePublish': GiottoProgram(
         controllers=['http-post'],
-        model=[finish_publish, "OK"],
+        model=[server.finish_publish, "OK"],
         view=BasicView,
     ),
     'backup': GiottoProgram(
-        model=[backup],
+        model=[server.backup],
         view=ForceJSONView
     ),
-    'configure': GiottoProgram(
-        description="API endpoint for changing library settings.",
-        model=[configure],
-        view=BasicView(
-            html=jinja_template("configure.html"),
+    'connections': [
+        AuthenticationProgram(
+            controllers=['http-get'],
+            model=[server.connections],
+            view=BasicView(
+                html=jinja_template("connections.html")
+            )
         ),
-    ),
-    'connections': GiottoProgram(
-        view=BasicView(
-            html=jinja_template("connections.html")
+        AuthenticationProgram(
+            controllers=['http-post'],
+            model=[server.connections],
+            view=BasicView(
+                html=jinja_template("connections.html")
+            )
         )
-    ),
+    ],
     'items': AuthenticationProgram(
         description="HTML page for looking at items and querying them",
-        model=[items],
+        model=[server.items],
         view=BasicView(
             html=jinja_template("items.html"),
         ),
@@ -113,28 +118,28 @@ manifest = ProgramManifest({
         ),
         AuthenticationRequiredProgram(
             controllers=['http-post'],
-            model=[edit_item],
+            model=[server.edit_item],
             view=BasicView(),
         ),
     ],
     'engines': ProgramManifest({
         '': AuthenticationRequiredProgram(
-            model=[settings],
+            model=[server.settings],
             view=BasicView(
                 html=jinja_template('engines.html'),
             ),
         ),
         'update_engine': AuthenticationRequiredProgram(
             controllers=['http-post'],
-            model=[update_engine],
+            model=[server.update_engine],
             view=BasicView,
         ),
         'migrate_off_engine': AuthenticationRequiredProgram(
-            model=[migrate_off_engine],
+            model=[server.migrate_off_engine],
             view=BasicView,
         ),
         'migrate_onto_engine': AuthenticationRequiredProgram(
-            model=[migrate_onto_engine],
+            model=[server.migrate_onto_engine],
             view=BasicView,
         ),
     }),

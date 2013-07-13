@@ -25,6 +25,6 @@
 <div id="qrcode"></div>
 
 <script>
-    $('#qrcode').qrcode({{ identity }});
+    $('#qrcode').qrcode("{{ data.username }}@{{ data.site_domain }}");
 </script>
 {% endblock %}

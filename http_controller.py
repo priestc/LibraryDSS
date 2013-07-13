@@ -6,7 +6,9 @@ import sys
 from giotto import initialize
 
 import config
-initialize(config)
+import secrets
+import machine
+initialize(config, secrets, machine)
 
 from manifest import manifest
 

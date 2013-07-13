@@ -16,6 +16,9 @@ from utils import sizeof_fmt
 from sqlalchemy import func
 session = get_config('session')
 
+def connections(user=LOGGED_IN_USER):
+    return {'site_domain': get_config('site_domain'), 'username': user.username}
+
 def home(user=LOGGED_IN_USER):
     library_count = session.query(Library).count()
     item_count = session.query(Item).count() or 0
