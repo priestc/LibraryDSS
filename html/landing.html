@@ -2,8 +2,11 @@
 
 {% block extra_head %}
 <style>
+	body {
+		font-family: Arial;
+	}
 	.login_section {
-		border: 1px solid gray;
+		border: 0px solid gray;
 		width: 20em;
 		marign: 10px auto 10px auto;
 		padding: 10px;
@@ -21,12 +24,16 @@
 	}
 
 	.mission_statement {
+		font-family: serif;
 		font-size: large;
 		background: white;
 		border: 1px solid tan;
 		margin: 10px auto 10px auto;
 		padding: 10px;
 		width: 40em;
+	}
+	footer {
+		text-align: center;
 	}
 </style>
 {% endblock %}
@@ -86,4 +93,5 @@
 			<button class="signup_button" onclick="window.location='/auth/register';">Signup Now!</button>
 		</center>
 	</div>
+<a href="https://github.com/priestc/LibraryDSS"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
 {% endblock %}
