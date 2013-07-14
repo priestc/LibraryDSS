@@ -4,8 +4,18 @@
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
         <link rel="stylesheet" href="/static/base.css">
         {% block extra_head %}{% endblock %}
+        <style>
+            .logo_container {margin: 10px;}
+            a.logo {font-size: xx-large; text-decoration: none}
+            .logo1 {color: green;}
+            .logo2 {color: orange;}
+        </style>
     </head>
     <body>
+        <div class="logo_container">
+            <a class="logo" href="/"><span class="logo1">libraries</span><span class="logo2">.pw</span></a>
+        </div>
+        {% block nav %}
         <nav>
             <a href="/">Home</a> -
             <a href="/items">Items</a> -
@@ -15,6 +25,7 @@
             <a href="/engines">Storage Engines</a> -
             <a href="/auth/logout">Log Out</a>
         </nav>
+        {% endblock %}
         <div id="content">
         {% block content%}{% endblock %}
         </div>

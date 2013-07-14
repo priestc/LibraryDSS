@@ -16,6 +16,9 @@ from utils import sizeof_fmt
 from sqlalchemy import func
 session = get_config('session')
 
+def execute_query(query):
+    return "foo"
+
 def connections(user=LOGGED_IN_USER):
     return {'site_domain': get_config('site_domain'), 'username': user.username}
 

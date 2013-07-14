@@ -1,7 +1,7 @@
 from giotto.programs import GiottoProgram, ProgramManifest
 from giotto.programs.management import management_manifest
 from giotto.views import GiottoView, BasicView, jinja_template, URLFollower, ForceJSONView
-from giotto.contrib.auth.middleware import AuthenticationMiddleware, AuthenticatedOrDie
+from giotto.contrib.auth.middleware import AuthenticationMiddleware, AuthenticatedOrDie, NotAuthenticatedOrRedirect
 from giotto.contrib.auth.manifest import create_auth_manifest
 from giotto.contrib.static.programs import StaticServe
 from giotto.primitives import LOGGED_IN_USER
@@ -42,12 +42,12 @@ def post_register_callback(user):
     session.commit()
 
 manifest = ProgramManifest({
-    '': '/home',
-    'home': GiottoProgram(
-        input_middleware=[AuthenticationMiddleware],
+    '': '/landing',
+    'landing': AuthenticationProgram(
+        input_middleware=[NotAuthenticatedOrRedirect('/ui/dashboard')],
         model=[server.home],
         view=BasicView(
-            html=jinja_template('home.html'),
+            html=jinja_template('landing.html'),
         ),
     ),
     'apps': ProgramManifest({
@@ -62,66 +62,75 @@ manifest = ProgramManifest({
             ),
         ),
     }),
-    'ui': ProgramManifest({
-        'autocomplete': GiottoProgram(
-            model=[server.autocomplete],
-            view=BasicView(),
-        )
-    }),
     'auth': create_auth_manifest(
         post_register_callback=post_register_callback,
-    ),
-    'startPublish': GiottoProgram(
-        controllers=['http-post'],
-        model=[server.start_publish],
-        view=ForceJSONView,
-    ),
-    'completePublish': GiottoProgram(
-        controllers=['http-post'],
-        model=[server.finish_publish, "OK"],
-        view=BasicView,
     ),
     'backup': GiottoProgram(
         model=[server.backup],
         view=ForceJSONView
     ),
-    'connections': [
-        AuthenticationProgram(
-            controllers=['http-get'],
-            model=[server.connections],
-            view=BasicView(
-                html=jinja_template("connections.html")
-            )
-        ),
-        AuthenticationProgram(
-            controllers=['http-post'],
-            model=[server.connections],
-            view=BasicView(
-                html=jinja_template("connections.html")
-            )
-        )
-    ],
-    'items': AuthenticationProgram(
-        description="HTML page for looking at items and querying them",
-        model=[server.items],
-        view=BasicView(
-            html=jinja_template("items.html"),
-        ),
-    ),
-    'item': [
-        AuthenticationRequiredProgram(
-            controllers=['http-get'],
-            model=[Item.get],
-            view=BasicView(
-                html=jinja_template('single_item.html'),
-            ),
-        ),
-        AuthenticationRequiredProgram(
-            controllers=['http-post'],
-            model=[server.edit_item],
+    'ui': ProgramManifest({
+        'autocomplete': GiottoProgram(
+            model=[server.autocomplete],
             view=BasicView(),
         ),
-    ],
+        'items': AuthenticationProgram(
+            description="HTML page for looking at items and querying them",
+            model=[server.items],
+            view=BasicView(
+                html=jinja_template("items.html"),
+            ),
+        ),
+        'item': [
+            AuthenticationRequiredProgram(
+                controllers=['http-get'],
+                model=[Item.get],
+                view=BasicView(
+                    html=jinja_template('single_item.html'),
+                ),
+            ),
+            AuthenticationRequiredProgram(
+                controllers=['http-post'],
+                model=[server.edit_item],
+                view=BasicView(),
+            ),
+        ],
+        'dashboard': GiottoProgram(
+            view=BasicView
+        ),
+        'connections': [
+            AuthenticationProgram(
+                controllers=['http-get'],
+                model=[server.connections],
+                view=BasicView(
+                    html=jinja_template("connections.html")
+                )
+            ),
+            AuthenticationProgram(
+                controllers=['http-post'],
+                model=[server.connections],
+                view=BasicView(
+                    html=jinja_template("connections.html")
+                )
+            )
+        ],
+    }),
+    'api': ProgramManifest({
+        'startPublish': GiottoProgram(
+            controllers=['http-post'],
+            model=[server.start_publish],
+            view=ForceJSONView,
+        ),
+        'completePublish': GiottoProgram(
+            controllers=['http-post'],
+            model=[server.finish_publish, "OK"],
+            view=BasicView,
+        ),
+        'query': GiottoProgram(
+            model=[server.execute_query],
+        )
+
+    }),
     'engines': ProgramManifest({
         '': AuthenticationRequiredProgram(
             model=[server.settings],

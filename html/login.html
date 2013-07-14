@@ -1,17 +1,23 @@
 {% extends "base.html" %}
 
+{% block nav %}
+<nav></nav>
+{% endblock %}
+
 {% block content %}
-    <span style="color:red">{{ errors }}</span>
-    <form method="post">
-        <label for="username">Username: </label>
-        <input id="username" type="text" name="username">
-        <br>
+    <h1>Log In</h1>
+    <div class="credentials_box">
+        <span style="color:red">{{ errors }}</span>
+        <form method="post">
+            <label for="username">Username: </label>
+            <input id="username" type="text" name="username">
+            <br>
 
-        <label for="password">Password: </label>
-        <input id="password" type="password" name="password">
-        <br>
+            <label for="password">Password: </label>
+            <input id="password" type="password" name="password">
+            <br>
 
-        <input type="submit">
-    </foam>
-
+            <input type="submit">
+        </form>
+    </div>
 {% endblock %}

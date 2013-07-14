@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+	.signup_button {
+		font-size: x-large;
+		border-radius: 10px;
+		color: white;
+		font-weight: bold;
+		background-color: green;
+		border-color: DarkGreen;
+		padding: 8px;
+		margin: 0 auto 0 auto;
+	}
+</style>
+{% endblock %}
+
+{% block nav %}
+<nav></nav>
+{% endblock %}
+
+{% block content %}
+
+    <h1>Welcome to Libraries.pw!</h1>
+
+    Total users: <strong>{{ data.library_count }}</strong><br>
+    Total items: <strong>{{ data.item_count }}</strong><br>
+    Total size of all files: <strong>{{ data.total_size }}</strong><br>
+
+    <h3>Hello New User</h3>
+    <a href="/auth/register"><button class="signup_button">Signup here</button></a>
+
+    <br><br>
+
+    <form method="post" action="/auth/login">
+        <label for="username">Username: </label>
+        <input id="username" type="text" name="username">
+        <br>
+
+        <label for="password">Password: </label>
+        <input id="password" type="password" name="password">
+        <br>
+
+        <input type="submit">
+    </form>
+
+{% endblock %}
