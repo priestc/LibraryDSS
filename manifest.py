@@ -72,7 +72,7 @@ manifest = ProgramManifest({
     'ui': ProgramManifest({
         'autocomplete': GiottoProgram(
             model=[server.autocomplete],
-            view=BasicView(),
+            view=BasicView,
         ),
         'items': AuthenticationProgram(
             description="HTML page for looking at items and querying them",
@@ -96,7 +96,9 @@ manifest = ProgramManifest({
             ),
         ],
         'dashboard': GiottoProgram(
-            view=BasicView
+            view=BasicView(
+                html=jinja_template('dashboard.html')
+            )
         ),
         'connections': [
             AuthenticationProgram(
