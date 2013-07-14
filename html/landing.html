@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 
 {% block extra_head %}
-<style>
-
-</style>
+<link rel="stylesheet" href="/static/landing.css">
 {% endblock %}
 
 {% block nav %}
@@ -17,23 +15,6 @@
 	    Total users: <strong>{{ data.library_count }}</strong>
 	    Total items: <strong>{{ data.item_count }}</strong>
 	    Total size of all files: <strong>{{ data.total_size }}</strong>
-	</div>
-	</center>
-
-	<center>
-	<div class="login_section">
-	    <h2>Login</h2>
-	    <form method="post" action="/auth/login">
-	        <label for="username">Username: </label>
-	        <input id="username" type="text" name="username">
-	        <br>
-
-	        <label for="password">Password: </label>
-	        <input id="password" type="password" name="password">
-	        <br>
-
-	        <input type="submit">
-	    </form>
 	</div>
 	</center>
     
@@ -69,12 +50,30 @@
 
 		<p>
 			To Learn more about the Library Data System, come hang out with the developers
-			in the official IRC channel on <a href="irc://irc.freenode.org/librarydss">Freenode #librarydss</a>
+			in the official IRC channel on <a href="irc://irc.freenode.org/librarydss">Freenode #librarydss</a>.
 		</p>
 		
 		<center>
 			<button class="signup_button" onclick="window.location='/auth/register';">Signup Now!</button>
 		</center>
+    
+        <center>
+
+            <br>Or Log in Below<br>
+        <div class="login_section">
+            <form method="post" action="/auth/login">
+                <label for="username">Username: </label>
+                <input id="username" type="text" name="username">
+                <br>
+
+                <label for="password">Password: </label>
+                <input id="password" type="password" name="password">
+                <br>
+
+                <input type="submit" value="Log in">
+            </form>
+        </div>
+        </center>
 	</div>
 <a href="https://github.com/priestc/LibraryDSS"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
 {% endblock %}

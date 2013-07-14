@@ -1,16 +1,23 @@
 body {
 	font-family: Arial;
 }
+
 h1 {
     font-weight: bold;
-
+    text-shadow: 4px 4px 4px #FFFFFF;
 }
+
+.stats {
+	text-shadow: 4px 4px 4px #FFFFFF;
+}
+
 .login_section {
 	border: 0px solid gray;
 	width: 20em;
 	marign: 10px auto 10px auto;
 	padding: 10px;
 }
+
 .signup_button {
 	font-size: x-large;
 	border-radius: 10px;
@@ -33,9 +40,11 @@ h1 {
 	padding: 10px;
 	width: 40em;
 }
+
 footer {
 	text-align: center;
 }
+
 #content {
     background-image: url(/static/books-light.jpg);
 }
