@@ -38,6 +38,7 @@ You would build an HTML5 page that looks like of like this:
     		<form>
     			<input type="text" name="place_name" placeholder="Place Name">
     			<input type="text" name="comment" placeholder="Comment">
+    			<input type="submit">
     		</form>
     		<script>
     			$("form").submit(function() {
