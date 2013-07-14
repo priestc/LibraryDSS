@@ -1,0 +1,41 @@
+body {
+	font-family: Arial;
+}
+h1 {
+    font-weight: bold;
+
+}
+.login_section {
+	border: 0px solid gray;
+	width: 20em;
+	marign: 10px auto 10px auto;
+	padding: 10px;
+}
+.signup_button {
+	font-size: x-large;
+	border-radius: 10px;
+	color: white;
+	font-weight: bold;
+	background-color: green;
+	border-color: DarkGreen;
+	padding: 8px;
+	margin: 0 auto 0 auto;
+	cursor: pointer;
+}
+
+.mission_statement {
+	font-family: serif;
+	font-size: large;
+	background: white;
+	border: 1px solid tan;
+    border-radius: 5px;
+	margin: 10px auto 10px auto;
+	padding: 10px;
+	width: 40em;
+}
+footer {
+	text-align: center;
+}
+#content {
+    background-image: url(/static/books-light.jpg);
+}

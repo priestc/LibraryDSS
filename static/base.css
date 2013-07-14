@@ -12,6 +12,7 @@ body {
     border-radius: 5px;
     margin: 0 auto 0 auto;
     padding: 5px;
+    box-shadow: 5px 5px 3px #888888;
 }
 
 h1 {
@@ -67,4 +68,28 @@ nav {
     width: 20em;
     padding: 10px;
     margin: 20px auto 20px auto;
+}
+
+.logo_container {
+    margin: 10px;
+}
+
+a.logo {
+    font-size: xx-large;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.logo1 {
+    color: green;
+}
+
+.logo2 {
+    color: orange;
+}
+
+footer {
+    margin-top: 20px;
+    font-size: small;
+    color: gray;
 }
