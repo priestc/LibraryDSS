@@ -2,6 +2,12 @@
 
 {% block extra_head %}
 <style>
+	.login_section {
+		border: 1px solid gray;
+		width: 20em;
+		marign: 10px auto 10px auto;
+		padding: 10px;
+	}
 	.signup_button {
 		font-size: x-large;
 		border-radius: 10px;
@@ -11,6 +17,16 @@
 		border-color: DarkGreen;
 		padding: 8px;
 		margin: 0 auto 0 auto;
+		cursor: pointer;
+	}
+
+	.mission_statement {
+		font-size: large;
+		background: white;
+		border: 1px solid tan;
+		margin: 10px auto 10px auto;
+		padding: 10px;
+		width: 40em;
 	}
 </style>
 {% endblock %}
@@ -20,28 +36,54 @@
 {% endblock %}
 
 {% block content %}
-
+	<center>
     <h1>Welcome to Libraries.pw!</h1>
+	<div class="stats"> 
+	    Total users: <strong>{{ data.library_count }}</strong>
+	    Total items: <strong>{{ data.item_count }}</strong>
+	    Total size of all files: <strong>{{ data.total_size }}</strong>
+	</div>
+	</center>
 
-    Total users: <strong>{{ data.library_count }}</strong><br>
-    Total items: <strong>{{ data.item_count }}</strong><br>
-    Total size of all files: <strong>{{ data.total_size }}</strong><br>
+	<center>
+	<div class="login_section">
+	    <h2>Login</h2>
+	    <form method="post" action="/auth/login">
+	        <label for="username">Username: </label>
+	        <input id="username" type="text" name="username">
+	        <br>
 
-    <h3>Hello New User</h3>
-    <a href="/auth/register"><button class="signup_button">Signup here</button></a>
+	        <label for="password">Password: </label>
+	        <input id="password" type="password" name="password">
+	        <br>
 
-    <br><br>
+	        <input type="submit">
+	    </form>
+	</div>
+	</center>
+    
+    <div class="mission_statement">
+	    <p>
+	    libraries.pw is a lightweight, simple, open source Library host.
+	    Click the button below to sign up to host your very own Library account.
+		</p>
+		<p>
+	    A Library Account is very similar to an email account, but it can
+	    do much more than send and receive messages.
+		</p>
+	    <p>
+	    The Library Transfer Protocol is an open source effort to standardize
+	    an API to promote better interoperability between cloud storage providers.
+	    </p>
 
-    <form method="post" action="/auth/login">
-        <label for="username">Username: </label>
-        <input id="username" type="text" name="username">
-        <br>
-
-        <label for="password">Password: </label>
-        <input id="password" type="password" name="password">
-        <br>
-
-        <input type="submit">
-    </form>
-
+	    <p>
+	    If app developers build their applications on top of the Library Transfer Protocol
+	    instead of proprietary services like Dropbox and Google Drive, it would drive the
+	    world in a direction towards better, open software.
+		</p>
+		
+		<center>
+			<button class="signup_button" onclick="window.location='/auth/register';">Signup Now!</button>
+		</center>
+	</div>
 {% endblock %}
