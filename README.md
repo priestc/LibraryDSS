@@ -3,7 +3,7 @@ libraries.pw
 
 libraries.pw is a simple, reference implemetation of a Library server, and Library console, written in Python.
 
-Use this software to run your own Library server provider, or use the one at (http://libraries.pw)[http://libraries.pw].
+Use this software to run your own Library server provider, or use the one at http://libraries.pw.
 
 To learn more about what a Library Server is, and what the system was designed for,
 refer to the Library Transfer Protocol documentation (which does not yet exist).
