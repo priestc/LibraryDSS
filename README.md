@@ -1,27 +1,22 @@
-Library Transfer Protocol
-=========================
+libraries.pw
+============
 
-LTP is a protocol for publishing, archiving, and organizing media files.
-The protocol is conceptually very similar to email, except backwards.
-With SMTP, you send messages to other people's inboxes, and other people send messages to your inbox.
+libraries.pw is a simple, reference implemetation of a Library server, and Library console, written in Python.
 
-With LTP, you publish media items (photos, videos, blog entries, other personal data) to your a library,
-other people publish data to their library, and these libraries can talk to each other to allow data to flow between them,
-as configured by the user who created the library.
+Use this software to run your own Library server provider, or use the one at (http://libraries.pw)[http://libraries.pw].
 
-What is LTP similar to?
------------------------
+To learn more about what a Library Server is, and what the system was designed for,
+refer to the Library Transfer Protocol documentation (which does not yet exist).
 
-It is very similar to WinFS.
+Library Transfer Protocol is a hybrid between a database and a filesystem.
+Its designed purpose is to store data is a long term manner, but it does so in a manner similar to a database.
+Instead of referencing data by a path and a filename, you reference data via SQL-like queries.
 
-Whats in this repo?
--------------------
-The software withuin this repo is the code for running an LTP server.
-It is written in Python, and works in both Python 2 and Python 3.
-This code is intended to be a reference implementation of the LTP protocol.
-The LTP Protocol will be defined and finalized after this reference implementation has reaches 1.0 state.
-This code has been written to be readable and to clearly communicate the concepts of the protocol, and is not in any way optimized.
+A Library server differs from a traditional fileserver or SQL database server,
+in that end users interact with the datastore directly.
 
+Another way to think of a Library server is a Google Drive service, but with a SQL-like interface. In fact,
+this reference implementation uses Google drive under the hood to handle the storage portion of it's process.
 
 More Information
 ----------------
