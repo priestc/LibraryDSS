@@ -72,7 +72,8 @@ You would build an HTML5 page that looks like of like this:
     	</body>
     </html>
 
-And then a separate page, which could even be served from a different domain, would look like this:
+And then a separate page, which could even be served from a different domain, that reads
+those Check Ins and puts them on a page, would look like this:
 
     <html>
     	<body>
@@ -81,26 +82,25 @@ And then a separate page, which could even be served from a different domain, wo
     			<input type="text" name="comment" placeholder="Comment">
     		</form>
     		<script>
-    				var users_library_identity = $.cookie('library_identity');
-    				var identity_token = $.cookie('library_token');
+				var users_library_identity = $.cookie('library_identity');
+				var identity_token = $.cookie('library_token');
 
-    				// notice the SQLesq query language. It is called LQL.
-    				// It is basically SQL WHERE clauses but without any joins
-    				// or group by or anything like that.
-    				// This query returns all checkins I made within the past 24 hours.
-    				// I could leave off the last bit of this query that limits it to my origin,
-    				// which would return checkins made by my friends as well as made by me.
-    				result = $.ajax("http://chris@libraries.pw/api/query",{
-    					"query": "including purpose == 'Check In', date_created matches today, origin == " + identity_token 
-    				}).oncomplete(funtion(result){
-    					foreach(checkin in result) {
-    						add_to_html(checkin);
-	    				}
-    				});    				
-    			});
+				// notice the SQLesq query language. It is called LQL.
+				// It is basically SQL WHERE clauses but without any joins
+				// or group by or anything like that.
+				// This query returns all checkins I made within the past 24 hours.
+				// I could leave off the last bit of this query that limits it to my origin,
+				// which would return checkins made by my friends as well as made by me.
+				result = $.ajax("http://chris@libraries.pw/api/query",{
+					"query": "including purpose == 'Check In', date_created matches today, origin == " + identity_token 
+				}).complete(funtion(result){
+					foreach(checkin in result) {
+						add_to_html(checkin);
+    				}
+				});    				
     		</script>
     	</body>
     </html>
 
-
+For more information, have a look through these presentation slides:
 https://docs.google.com/presentation/d/1OxoolWUo2iY_ohxG_HHxd1gQTm3JA52pvWRnefl9IlA/pub?start=false&loop=false&delayms=3000#slide=id.p
