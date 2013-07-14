@@ -26,11 +26,81 @@ How far along is LibraryDSS?
 
 Currently pre-beta. If you would like to contribute fell free to try it out at libraries.pw.
 
-I am a Developer, how does LibraryDSS work?
--------------------------------------------
+I am a Developer, describe to me how an application written using LibraryDSS would work?
+----------------------------------------------------------------------------------------
 
-Instead of saving data to a remote database, you connect to the user's library, and store the data there.
+Lets say you wanted to write a foursquare clone using the LibraryDSS system.
 
+You would build an HTML5 page that looks like of like this:
+
+    <html>
+    	<body>
+    		<form>
+    			<input type="text" name="place_name" placeholder="Place Name">
+    			<input type="text" name="comment" placeholder="Comment">
+    		</form>
+    		<script>
+    			$("form").submit(function() {
+    				// this gets executed when the user clicks the submit button.
+    				// instead of sending the data to foursquare.com to be stored,
+    				// we send it to the user's library. They could have this library
+    				// hosted anywhere by anyone.
+
+    				// The user's `identity` is the address to their library. It looks 
+    				// a lot like an email address. When a user signs up for an app
+    				// that is built on top of LibraryDSS, they don't ever need to supply
+    				// a password. Not when they sign up, not when they login. When a
+    				// user signs up, they supply their identity, and it is stored in cookies.
+    				// Authentication happens at "publish time"
+    				var users_library_identity = $.cookie('library_identity');
+    				var identity_token = $.cookie('library_token');
+
+    				// the below example shows hardcoded urls and values to demonstrate
+    				// the API. Notice the data goes to the user's library domain,
+    				// not to the domain that served this page.
+    				// All data sent data has to be flat, key+value.
+    				// Unlike SOAP where you can have complex, nested XML structures.
+    				$.ajax("http://chris@libraries.pw/api/publish" {
+    					'app': "Foursquare Clone",
+    					'date_created': '2013-7-14T03:23:54Z',
+    					'place_name': "Ben & Jerrys",
+    					'purpose': "Check In",
+    					'location': navigator.geolocation.getCurrentPosition().toString(),
+    				});
+    			});
+    		</script>
+    	</body>
+    </html>
+
+And then a separate page, which could even be served from a different domain, would look like this:
+
+    <html>
+    	<body>
+    		<form>
+    			<input type="text" name="place_name" placeholder="Place Name">
+    			<input type="text" name="comment" placeholder="Comment">
+    		</form>
+    		<script>
+    				var users_library_identity = $.cookie('library_identity');
+    				var identity_token = $.cookie('library_token');
+
+    				// notice the SQLesq query language. It is called LQL.
+    				// It is basically SQL WHERE clauses but without any joins
+    				// or group by or anything like that.
+    				// This query returns all checkins I made within the past 24 hours.
+    				// I could leave off the last bit of this query that limits it to my origin,
+    				// which would return checkins made by my friends as well as made by me.
+    				result = $.ajax("http://chris@libraries.pw/api/query",{
+    					"query": "including purpose == 'Check In', date_created matches today, origin == " + identity_token 
+    				}).oncomplete(funtion(result){
+    					foreach(checkin in result) {
+    						add_to_html(checkin);
+	    				}
+    				});    				
+    			});
+    		</script>
+    	</body>
+    </html>
 
 
 https://docs.google.com/presentation/d/1OxoolWUo2iY_ohxG_HHxd1gQTm3JA52pvWRnefl9IlA/pub?start=false&loop=false&delayms=3000#slide=id.p
