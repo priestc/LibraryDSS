@@ -48,7 +48,7 @@
         <img class="icon icon-tiny placeholder"> <!-- for symmetry -->
         <input type="text" class="key" list="keys">
         <datalist>
-            {% for value in data.keys %}
+            {% for value in data['keys'] %}
             <option value="{{ value }}">
             {% endfor %}
         </datalist>

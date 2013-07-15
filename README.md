@@ -93,7 +93,7 @@ those Check Ins and puts them on a page, would look like this:
 				// I could leave off the last bit of this query that limits it to my origin,
 				// which would return checkins made by my friends as well as made by me.
 				result = $.ajax("http://chris@libraries.pw/api/query",{
-					"query": "including purpose == 'Check In', date_created matches today, origin == " + identity_token 
+					"query": "including purpose == 'Check In', date_created matches 2013-7-14, origin == " + identity_token 
 				}).complete(funtion(result){
 					foreach(checkin in result) {
 						add_to_html(checkin);
