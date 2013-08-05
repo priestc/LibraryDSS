@@ -50,7 +50,7 @@ manifest = Manifest({
             html=jinja_template('landing.html'),
         ),
     ),
-    'apps': ProgramManifest({
+    'apps': Manifest({
         'camera': Program(
             view=BasicView(
                 html=jinja_template("camera.html"),
@@ -69,7 +69,7 @@ manifest = Manifest({
         model=[server.backup],
         view=ForceJSONView
     ),
-    'ui': ProgramManifest({
+    'ui': Manifest({
         'autocomplete': Program(
             model=[server.autocomplete],
             view=BasicView,
@@ -117,7 +117,7 @@ manifest = Manifest({
             )
         ],
     }),
-    'api': ProgramManifest({
+    'api': Manifest({
         'startPublish': Program(
             controllers=['http-post'],
             model=[server.start_publish],
@@ -133,7 +133,7 @@ manifest = Manifest({
         )
 
     }),
-    'engines': ProgramManifest({
+    'engines': Manifest({
         '': AuthenticationRequiredProgram(
             model=[server.settings],
             view=BasicView(
@@ -173,7 +173,7 @@ manifest = Manifest({
         view=BasicView,
     ),
     'mgt': management_manifest,
-    'test': ProgramManifest({
+    'test': Manifest({
         'integration': Program(
             # run a quick and dirty test to see if everything is working.
             model=[test_wrapper],
