@@ -5,6 +5,11 @@ h1 {
 
 .stats {
 	text-shadow: 4px 4px 4px #FFFFFF;
+	padding: 10px;
+	background: white;
+	width: 80%;
+	border-top: 2px solid brown;
+	border-bottom: 2px solid brown;
 }
 
 .login_section {
