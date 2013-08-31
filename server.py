@@ -89,14 +89,14 @@ def items(query=None, user=LOGGED_IN_USER, identity=USER):
         'keys': library.all_keys(),
     }
 
-def settings(user=LOGGED_IN_USER):
+def engine_dashboard(user=LOGGED_IN_USER):
     library = Library.get(user.username)
     names = [x.name for x in library.engines]
     
     google_drive_url = None
     if 'googledrive' not in names:
         # only generate a google drive auth url if no google drive engine exists
-        google_drive_url = get_google_flow().step1_get_authorize_url()
+        google_drive_url = get_google_flow(get_config('domain')).step1_get_authorize_url()
 
     dropbox_url = None
     if 'dropbox' not in names:

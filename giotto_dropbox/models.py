@@ -9,7 +9,7 @@ from giotto.primitives import LOGGED_IN_USER
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime, Boolean, func, desc
 from sqlalchemy.orm import relationship
 
-from dropbox import session
+from dropbox import session as dropbox_session
 
 Base = get_config("Base")
 
@@ -71,7 +71,7 @@ def get_dropbox_authorize_url(user):
     return sess.build_authorize_url(request_token, oauth_callback=url)
 
 def get_dropbox_session(token_key=None, token_secret=None):
-    sess = session.DropboxSession(
+    sess = dropbox_session.DropboxSession(
         get_config('dropbox_app_key'), get_config('dropbox_app_secret'),
         get_config('dropbox_app_type')
     )

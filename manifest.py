@@ -135,7 +135,7 @@ manifest = Manifest({
     }),
     'engines': Manifest({
         '': AuthenticationRequiredProgram(
-            model=[server.settings],
+            model=[server.engine_dashboard],
             view=BasicView(
                 html=jinja_template('engines.html'),
             ),

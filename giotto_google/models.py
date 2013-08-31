@@ -2,11 +2,15 @@ from oauth2client.client import flow_from_clientsecrets
 from giotto import get_config
 from giotto.primitives import ALL_DATA, LOGGED_IN_USER
 
-def get_google_flow():
+def get_google_flow(scheme="http"):
+    """
+    Wrapper for calling `flow_from_clientsecrets` from the google 
+    authentication API.
+    """
     return flow_from_clientsecrets(
         'client_secrets.json',
         scope='https://www.googleapis.com/auth/drive',
-        redirect_uri='%s/google/oauth2callback' % get_config("server_url"),
+        redirect_uri='%s://%s/google/oauth2callback' % (scheme, get_config('domain')),
     )
 
 def make_callback_model(callback):
@@ -16,7 +20,7 @@ def make_callback_model(callback):
         back to this program, where `code` is exchanged for an auth token, and
         then stored.
         """
-        flow = get_google_flow()
+        flow = get_google_flow(get_config('domain'))
         credentials = flow.step2_exchange(code)
         if callback:
             return callback(user, credentials)
