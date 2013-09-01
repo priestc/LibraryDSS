@@ -25,7 +25,7 @@ def query(query):
     return json.tool(response.json)
 
 
-def publish(filename, metadata=ALL_DATA):
+def publish(filename, identity, metadata=ALL_DATA):
     """
     Upload the following filename to the library server.
     filename can be either a filename on the local filesystem, or a url.
@@ -34,9 +34,6 @@ def publish(filename, metadata=ALL_DATA):
     """
     t0 = datetime.datetime.now()
 
-    with open(".library_identity.example") as datafile:
-        identity = datafile.read().strip()
-    
     try:
         f = open(filename, 'r')
     except IOError:
@@ -71,13 +68,14 @@ def _upload_to_engine(identity, filename, size, hash):
     Afterwords, return the url of the newly uploaded file.
     """
     data = {"size": size, "hash": hash}
-    url = "http://%s/startPublish" % identity
+    url = "https://%s/api/startPublish.json" % identity
 
     try:
-        response = requests.post(url, data=data, auth=(identity, ''))
-    except requests.exceptions.ConnectionError:
-        raise Exception("Could not connect to Library Server: %s" % url)
+        response = requests.post(url, data=data, auth=(identity, ''), verify=False)
+    except requests.exceptions.ConnectionError as exc:
+        raise Exception("Could not connect to Library Server: %s, %s" % (url, exc))
 
+    import debug
     code = response.status_code
     if code != 200:
         msg = response.error
@@ -86,7 +84,7 @@ def _upload_to_engine(identity, filename, size, hash):
     ext = filename.split('.')[-1]
     endfilename = "%s.%s.%s" % (size, hash, ext)
 
-    for engine in response.json:
+    for engine in response.json():
         # engine data is transmitted as a base64 encoded pickle.
         connect_data = pickle.loads(base64.b64decode(engine['data']))
         name = engine['name']

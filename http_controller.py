@@ -21,4 +21,4 @@ if not config.debug:
     application = error_handler(application)
 
 if '--run' in sys.argv:
-    serve('127.0.0.1', 5000, application, use_debugger=True, use_reloader=True)
+    serve('127.0.0.1', 443, application, ssl='adhoc', use_debugger=True, use_reloader=True)

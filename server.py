@@ -38,6 +38,7 @@ def start_publish(size, hash, identity=USER):
     Based on the size and hash, determine which storage engine should get this
     new upload.
     """
+    import debug
     library = Library.get(identity)
     return library.get_storage(size)
 
