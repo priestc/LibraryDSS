@@ -38,7 +38,6 @@ def start_publish(size, hash, identity=USER):
     Based on the size and hash, determine which storage engine should get this
     new upload.
     """
-    import debug
     library = Library.get(identity)
     return library.get_storage(size)
 
@@ -97,7 +96,7 @@ def engine_dashboard(user=LOGGED_IN_USER):
     google_drive_url = None
     if 'googledrive' not in names:
         # only generate a google drive auth url if no google drive engine exists
-        google_drive_url = get_google_flow(get_config('domain')).step1_get_authorize_url()
+        google_drive_url = get_google_flow('https').step1_get_authorize_url()
 
     dropbox_url = None
     if 'dropbox' not in names:

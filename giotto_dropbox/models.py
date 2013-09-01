@@ -39,7 +39,7 @@ class DropboxRequestToken(Base):
         """
         s = get_config("db_session")
         ret = s.query(cls).filter(cls.user==user).first()
-        return session.OAuthToken(key=ret.key, secret=ret.secret)
+        return dropbox_session.OAuthToken(key=ret.key, secret=ret.secret)
 
 def make_callback_model(callback):
     """

@@ -7,10 +7,11 @@ def get_google_flow(scheme="http"):
     Wrapper for calling `flow_from_clientsecrets` from the google 
     authentication API.
     """
+    url = '%s://%s/google/oauth2callback' % (scheme, get_config('domain'))
     return flow_from_clientsecrets(
         'client_secrets.json',
         scope='https://www.googleapis.com/auth/drive',
-        redirect_uri='%s://%s/google/oauth2callback' % (scheme, get_config('domain')),
+        redirect_uri=url,
     )
 
 def make_callback_model(callback, scheme='http'):
