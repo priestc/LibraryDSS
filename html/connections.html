@@ -19,12 +19,77 @@
 <script type="text/javascript" src="/static/jsqrcode/findpat.js"></script>
 <script type="text/javascript" src="/static/jsqrcode/alignpat.js"></script>
 <script type="text/javascript" src="/static/jsqrcode/databr.js"></script>
+<style>
+    #content {
+        overflow: hidden;
+    }
+    #top_part {
+        overflow: hidden;
+        height: 300px;
+    }
+    #qrcode {
+        float: left;
+        padding: 10px;
+        width: 256px;
+        height: 256px;
+        border: 0px solid black;
+    }
+    #new_connection {
+        float: left;
+        padding: 10px;
+        height: 256px;
+        width: 500px;
+        background: gold;
+        border: 0px solid blue;
+    }
+    #existing_connections {
+        clear: both;
+    }
+    .hidden_new_connection_fields {
+        display: none;
+    }
+</style>
+
 {% endblock %}
 
 {% block content %}
-<div id="qrcode"></div>
+<div id="top_part">
+    <div id="qrcode"></div>
+
+    <div id="new_connection">
+        <h3>Create New Connection</h3>
+        <form method="post">
+            <label for="identity">Identity:</label> <input id="identity" type="text" name="identity">
+            <br>
+            <label for="request_auth">Request Authorization?</label> <input id="request_auth" type="checkbox" id="request_auth" name="request_auth">
+            <br>
+            <span class="hidden_new_connection_fields">
+                <label for="request_query">Request Query (Optional):</label> <input type="text" id="request_query" name="request_query">
+                <br>
+                <label for="request_message">Message (Optional):</label> <input type="text" id="request_message" name="request_message">
+                <br>
+            </span>
+            <input type="submit" value="Create">
+        </form>
+    </div>
+</div>
+
+<div id="existing_connections">
+    {% for connection in data.connections %}
+        {{ connection }}<br>
+    {% else %}
+        <h3>No existing connections</h3>
+    {% endfor %}
+</div>
 
 <script>
     $('#qrcode').qrcode("{{ data.username }}@{{ data.site_domain }}");
+    $('#request_auth').click(function(){
+        if ($(this).is(":checked")) {
+            $('.hidden_new_connection_fields').show();
+        } else {
+            $('.hidden_new_connection_fields').hide();
+        }
+    });
 </script>
 {% endblock %}

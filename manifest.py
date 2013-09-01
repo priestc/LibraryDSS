@@ -1,5 +1,6 @@
 from giotto.programs import Program, Manifest
 from giotto.programs.management import management_manifest
+from giotto.control import Redirection
 from giotto.views import GiottoView, BasicView, jinja_template, URLFollower, ForceJSONView
 from giotto.contrib.auth.middleware import AuthenticationMiddleware, AuthenticatedOrDie, NotAuthenticatedOrRedirect
 from giotto.contrib.auth.manifest import create_auth_manifest
@@ -8,13 +9,8 @@ from giotto.primitives import LOGGED_IN_USER
 from giotto import get_config
 
 from models import Item, Library, configure
-from client import publish, query
-#from server import (finish_publish, start_publish, items, backup,
-#    settings, migrate_off_engine, update_engine, migrate_onto_engine, home,
-#    edit_item, autocomplete, connections)
+import client
 import server
-
-from config import project_path
 
 from giotto_dropbox.manifest import make_dropbox_manifest
 from giotto_google.manifest import make_google_manifest
@@ -37,7 +33,7 @@ def post_register_callback(user):
     After a new user signs up, create a Library for them.
     """
     session = get_config('db_session')
-    l = Library(identity=user.username)
+    l = Library(identity="%s@%s" % (user.username, get_config('domain')))
     session.add(l)
     session.commit()
 
@@ -103,16 +99,16 @@ manifest = Manifest({
         'connections': [
             AuthenticationProgram(
                 controllers=['http-get'],
-                model=[server.connections],
+                model=[server.show_connections],
                 view=BasicView(
                     html=jinja_template("connections.html")
                 )
             ),
             AuthenticationProgram(
                 controllers=['http-post'],
-                model=[server.connections],
+                model=[server.connection_submit],
                 view=BasicView(
-                    html=jinja_template("connections.html")
+                    html=Redirection('/connections')
                 )
             )
         ],
@@ -165,12 +161,12 @@ manifest = Manifest({
     ),
     'publish': Program(
         controllers=['cmd'],
-        model=[publish],
+        model=[client.publish],
         view=BasicView,
     ),
     'query': Program(
         controllers=['cmd'],
-        model=[query],
+        model=[client.query],
         view=BasicView,
     ),
     'mgt': management_manifest,

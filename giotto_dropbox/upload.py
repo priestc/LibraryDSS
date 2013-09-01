@@ -13,12 +13,10 @@ def upload(filename, endfilename, access_token):
         token_secret=access_token['secret'],
     )
 
-    c = client.DropboxClient(sess)
+    db = client.DropboxClient(sess)
 
     with open(filename) as f:
         remote_path = os.path.join('Library', endfilename)
-        response = c.put_file(remote_path, f)
+        response = db.put_file(remote_path, f)
 
-    import debug
-
-    return response['path']
+    return db.share(response['path'])['url']

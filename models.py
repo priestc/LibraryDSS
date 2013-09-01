@@ -9,28 +9,70 @@ import os
 from giotto import get_config
 
 Base = get_config('Base')
-session = get_config('db_session')
 
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime, Boolean, func, desc, PickleType
 from sqlalchemy.orm import relationship
 from giotto.primitives import LOGGED_IN_USER
 from giotto.exceptions import DataNotFound
+from giotto.utils import random_string
 
 from utils import fuzzy_to_datetime, datetime_to_fuzzy, sizeof_fmt, is_date_key
 from LQL import Query
 
 IMMUTABLE_BUILT_IN = ['origin', 'license']
 
-class Contract(Base):
+class Connection(Base):
     """
     Represents a set of files that get shared between two libraries.
     """
     id = Column(Integer, primary_key=True)
     library_id = Column(ForeignKey("giotto_library.identity"))
-    library = relationship('Library', backref="disributions")
-    identities = Column(String) # people these files are shared with
-    query = Column(PickleType) # the query object that defines the files
-    license = Column(String) # the license that gets applied to the files when moved.
+    library = relationship('Library', backref="connections")
+    identity = Column(String) # full identity of connecting library (username@domain).
+    filter_query = Column(PickleType) # the query object that defines the files
+    my_auth_token = Column(String(32)) # whoever is in possession of this token can access this connection
+    their_auth_token = Column(String(32))
+    
+    def __repr__(self):
+        mode = 'follow' if not self.my_auth_token else 'auth'
+        return "%s -> %s [%s]" % (self.library.identity, self.identity, mode)
+
+    @classmethod
+    def create_connection(cls, library, identity, request_auth=False, filter_query=None, request_query=None, request_message=None):
+        """
+        The owner of `library` wants to connect to `identity` with `filter_query` applied
+        to all data coming back from said connection.
+        """
+        username, domain = identity.split('@') # of the person who we want to connect to
+        if not request_auth:
+            my_auth_token = ''
+            their_auth_token = ''
+        else:
+            my_auth_token = random_string(32)
+            response = requests.get(
+                "https://%s/api/requestAuthorizedConnection" % domain,
+                data={
+                    'target_identity': identity,
+                    'requesting_identity': library.identity,
+                    'requesting_token': my_auth_token,
+                    'request_message': request_message,
+                    'request_query': request_query,
+                }
+            )
+            their_auth_token = response.json()['auth_token']
+
+        conn =cls(
+            library=library,
+            identity=identity,
+            filter_query=filter_query,
+            my_auth_token=my_auth_token,
+            their_auth_token=their_auth_token
+        )
+
+        session = get_config('db_session')
+        session.add(conn)
+        session.commit()
+        return conn
 
 class Library(Base):
     identity = Column(String, primary_key=True)
@@ -44,17 +86,42 @@ class Library(Base):
         q = session.query(MetaData.value).filter(key=key)
         return q.all()
 
+    def connection_details(self, identity, request_auth=False, filter_query=None, request_query=None, request_message=None):
+        """
+        Update details of a connection
+        """
+        session = get_config('db_session')
+        # try to find existing connection.
+        conn = session.query(Connection).filter(Library.identity==identity, Connection.identity==identity).first()
+        if not conn:
+            Connection.create_connection(
+                library=self,
+                identity=identity,
+                request_auth=request_auth,
+                filter_query=filter_query,
+                request_query=request_query,
+                request_message=request_message,
+            )
+        else:
+            conn.filter_query = filter_query
+            session.add(conn)
+            session.commit()
+
     @classmethod
-    def get(cls, identity):
+    def get(cls, identity=None, username=None):
         """
         Get Library by identity.
         """
+        if not identity:
+            identity = "%s@%s" % (username, get_config('domain'))
+        session = get_config('db_session')
         return session.query(cls).get(identity)
 
     def has(self, size=None, hash=None):
         """
         Does this size/hash pair exist in my library?
         """
+        session = get_config('db_session')
         items = session.query(MetaData, Library)\
             .filter(Library.identity == self.identity)\
             .filter(
@@ -83,6 +150,7 @@ class Library(Base):
 
     def add_storage(self, engine, connection_data):
         e = UploadEngine(library=self, name=engine, connection_data=connection_data)
+        session = get_config('db_session')
         session.add(e)
         session.commit()
         return e
@@ -99,6 +167,7 @@ class Library(Base):
         """
         Import a new item into the Library.
         """
+        session = get_config('db_session')
         metadata = json.loads(metadata)
         i = Item(
             engine_id=engine_id,
@@ -128,6 +197,7 @@ class Item(Base):
 
     @classmethod
     def get(cls, id, user=LOGGED_IN_USER):
+        session = get_config('db_session')
         ret = session.query(cls)\
                       .filter_by(id=id)\
                       .filter_by(library_identity=user.username)\
@@ -161,6 +231,7 @@ class Item(Base):
 
 
     def reset_metadata(self, metadata):
+        session = get_config('db_session')
         session.query(MetaData).filter_by(item=self).delete()
         for key, value in metadata.items():
             m = MetaData(key=key, value=value, item=self)
@@ -172,6 +243,7 @@ class Item(Base):
         """
         Get metadata for this
         """
+        session = get_config('db_session')
         result = session.query(MetaData).filter_by(item=self, key=key).first()
         return (result and result.value) or ''
 
@@ -180,6 +252,7 @@ class Item(Base):
         Return all metadata for this item. Sorted by key name alphabetical.
         mutable: only include fields that can be changed
         """
+        session = get_config('db_session')
         query = session.query(MetaData).filter_by(item=self).order_by(MetaData.key)
         meta = {m.key: m.get_value() for m in query}
         
@@ -263,6 +336,7 @@ class UploadEngine(Base):
         engine API, just goes by the local database.
         human == return as human readable with 'MB', 'KB', etc.
         """
+        session = get_config('db_session')
         human = sizeof_fmt if human else lambda x: x
         items = session.query(Item).filter_by(engine_id=self.id).all()
         return human(sum(x.size for x in items))
@@ -271,6 +345,7 @@ class UploadEngine(Base):
         """
         Return total number of items stored onto this storage engine.
         """
+        session = get_config('db_session')
         return session.query(Item).filter_by(engine_id=self.id).count()
 
 def configure():

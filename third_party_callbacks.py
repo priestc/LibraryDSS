@@ -8,7 +8,7 @@ def dropbox_api_callback(user, access_token):
     the oauth process. This is the callback used in oauth1.
     """
     session = get_config('db_session')
-    library = Library.get(user.username)
+    library = Library.get(username=user.username)
     at = {'key': access_token.key, 'secret': access_token.secret}
     engine = UploadEngine(name="dropbox", connection_data=at, library=library)
     session.add(engine)
@@ -23,7 +23,7 @@ def google_api_callback(user, credentials):
     then stored.
     """
     session = get_config('db_session')
-    library = Library.get(user.username)
+    library = Library.get(username=user.username)
     engine = UploadEngine(name="googledrive", connection_data=credentials, library=library)
     session.add(engine)
     session.commit()

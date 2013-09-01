@@ -82,7 +82,7 @@ def _upload_to_engine(identity, filename, size, hash):
     endfilename = "%s.%s.%s" % (size, hash, ext)
 
     count = 0
-    for count, engine in enumerate(response.json()):
+    for count, engine in enumerate(response.json(), 1):
         # engine data is transmitted as a base64 encoded pickle.
         connect_data = pickle.loads(base64.b64decode(engine['data']))
         name = engine['name']

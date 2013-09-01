@@ -18,8 +18,18 @@ from sqlalchemy import func
 def execute_query(query):
     return "foo"
 
-def connections(user=LOGGED_IN_USER):
-    return {'site_domain': get_config('domain'), 'username': user.username}
+def show_connections(user=LOGGED_IN_USER):
+    #import debug
+    library = Library.get(username=user.username)
+    return {
+        'site_domain': get_config('domain'),
+        'username': user.username,
+        'existing_connections': library.connections
+    }
+
+def connection_submit(identity, request_auth=False, user=LOGGED_IN_USER, filter_query=None, request_query=None, request_message=None):
+    library = Library.get(username=user.username)
+    library.connection_details(identity, filter_query, request_query, request_message)
 
 def home(user=LOGGED_IN_USER):
     session = get_config('db_session')
@@ -38,7 +48,7 @@ def start_publish(size, hash, username=USER):
     Based on the size and hash, determine which storage engine should get this
     new upload.
     """
-    library = Library.get(username)
+    library = Library.get(username=username)
     return library.get_storage(size)
 
 def finish_publish(hash, metadata, engine_id=None, username=USER):
@@ -47,7 +57,7 @@ def finish_publish(hash, metadata, engine_id=None, username=USER):
     finish the publish process.
     """
     identity = "%s@%s" % (username, get_config('domain'))
-    library = Library.get(username)
+    library = Library.get(identity=identity)
     library.add_item(
         engine_id=engine_id,
         origin=identity,
@@ -55,7 +65,7 @@ def finish_publish(hash, metadata, engine_id=None, username=USER):
     )
     return "OK"
 
-def items(query=None, user=LOGGED_IN_USER, identity=USER):
+def items(query=None, user=LOGGED_IN_USER, username=USER):
     """
     Given an LQL query and a library identity, return the items that match.
     """
@@ -67,7 +77,7 @@ def items(query=None, user=LOGGED_IN_USER, identity=USER):
     if not identity:
         raise NotAuthorized()
 
-    library = Library.get(identity)
+    library = Library.get(username=identity)
     session = get_config('db_session')
     items = session.query(Item).join(MetaData).filter(Item.library==library)
     query_json = '[]'
@@ -92,7 +102,7 @@ def items(query=None, user=LOGGED_IN_USER, identity=USER):
     }
 
 def engine_dashboard(user=LOGGED_IN_USER):
-    library = Library.get(user.username)
+    library = Library.get(username=user.username)
     names = [x.name for x in library.engines]
     
     google_drive_url = None
@@ -115,8 +125,8 @@ def edit_item(size, hash, user=LOGGED_IN_USER):
     item = Item.get(size=size, hash=hash, user=user)
     return item
 
-def backup(identity=USER):
-    library = Library.get(identity)
+def backup(username=USER):
+    library = Library.get(username=username)
     return library.items
 
 def update_engine(engine_id, data=ALL_DATA, user=LOGGED_IN_USER):
