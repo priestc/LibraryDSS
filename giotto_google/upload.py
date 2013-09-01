@@ -5,10 +5,14 @@ from apiclient import errors
 from apiclient.http import MediaFileUpload
 from apiclient.discovery import build
 
+import logging
+logger = logging.getLogger('google_drive.upload')
+
 def upload(filename, endfilename, credentials):
     """
     Upload to googe drive. Called by either front end or back end.
     """
+    logger.info('Commencing upload to Google Drive')
     mime_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
     http = httplib2.Http()
@@ -23,14 +27,10 @@ def upload(filename, endfilename, credentials):
     }
 
     try:
-        file = service.files().insert(
+        response = service.files().insert(
             body=body,
             media_body=media_body).execute()
-
-        # Uncomment the following line to print the File ID
-        # print 'File ID: %s' % file['id']
-
-        return file
+        return response['selfLink'][1]
     except errors.HttpError, error:
         print 'An error occured: %s' % error
         return None

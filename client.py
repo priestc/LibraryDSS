@@ -21,7 +21,6 @@ def query(query, identity, token=None):
     response = requests.get(url, params=q, auth=(identity_user, ''))
     return json.tool(response.json())
 
-
 def publish(filename, identity, metadata=ALL_DATA):
     """
     Upload the following filename to the library server.
@@ -51,11 +50,13 @@ def publish(filename, identity, metadata=ALL_DATA):
         url = _upload_to_engine(identity, filename, size, hash)
 
         if 'date_created' not in metadata:
-            metadata['date_created'] = created
+            metadata['date_created'] = str(created)
 
         if 'mimetype' not in metadata:
-            metadata['mimetype'] = mimetypes.guess_type(filename)
+            metadata['mimetype'] = mimetypes.guess_type(filename)[0]
 
+    del metadata['identity']
+    del metadata['filename']
     _complete_publish(identity, size, hash, url, metadata)
     return "Publish Complete. Took %s" % (datetime.datetime.now() - t0)
 
@@ -66,9 +67,9 @@ def _upload_to_engine(identity, filename, size, hash):
     """
     data = {"size": size, "hash": hash}
     url = "https://%s/api/startPublish.json" % identity
-
+    username = identity.split('@')[0]
     try:
-        response = requests.post(url, data=data, auth=(identity, ''), verify=False)
+        response = requests.post(url, data=data, auth=(username, ''), verify=False)
     except requests.exceptions.ConnectionError as exc:
         raise Exception("Could not connect to Library Server: %s, %s" % (url, exc))
 
@@ -80,7 +81,8 @@ def _upload_to_engine(identity, filename, size, hash):
     ext = filename.split('.')[-1]
     endfilename = "%s.%s.%s" % (size, hash, ext)
 
-    for engine in response.json():
+    count = 0
+    for count, engine in enumerate(response.json()):
         # engine data is transmitted as a base64 encoded pickle.
         connect_data = pickle.loads(base64.b64decode(engine['data']))
         name = engine['name']
@@ -97,6 +99,9 @@ def _upload_to_engine(identity, filename, size, hash):
                 return id, upload_dropbox(filename, endfilename, connect_data)
         except Exception as exc:
             print "upload to %s failed: %s" % (name, exc)
+    
+    if not count:
+        raise Exception("No Storage Engines Configured")
 
     raise Exception("Upload failed.")
 
@@ -107,13 +112,14 @@ def _complete_publish(identity, size, hash, url, metadata):
     """
     if size and hash:
         # local file
-        metadata.update({"url": url, "hash": hash, "size": size})
+        metadata.update({"url": url, "size": size})
     else:
         # url
         metadata.update({"url": url})
 
-    print "right before client sends upload details back to finishPublish", metadata
-    response = requests.post("http://%s/completePublish" % identity, data=metadata, auth=(identity, ''))
+    username, domain = identity.split('@')
+    data = {'metadata': json.dumps(metadata), 'hash': hash}
+    response = requests.post("https://%s/api/completePublish.json" % domain, data=data, auth=(username, ''), verify=False)
     print "Library server response...", response.content
 
 def is_url(url):

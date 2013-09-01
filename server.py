@@ -33,23 +33,24 @@ def home(user=LOGGED_IN_USER):
         'total_size': sizeof_fmt(total_size)
     }
 
-def start_publish(size, hash, identity=USER):
+def start_publish(size, hash, username=USER):
     """
     Based on the size and hash, determine which storage engine should get this
     new upload.
     """
-    library = Library.get(identity)
+    library = Library.get(username)
     return library.get_storage(size)
 
-def finish_publish(url, size, hash, date_created, mimetype, engine_id=None, metadata=ALL_DATA, identity=USER):
-    library = Library.get(identity)
+def finish_publish(hash, metadata, engine_id=None, username=USER):
+    """
+    After the client's upload is complete, this api is hit to actually
+    finish the publish process.
+    """
+    identity = "%s@%s" % (username, get_config('domain'))
+    library = Library.get(username)
     library.add_item(
-        url=url,
         engine_id=engine_id,
-        date_created=date_created,
-        mimetype=mimetype,
-        size=size,
-        hash=hash,
+        origin=identity,
         metadata=metadata
     )
     return "OK"

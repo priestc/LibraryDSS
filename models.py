@@ -95,15 +95,15 @@ class Library(Base):
         items = session.query(Item).join(MetaData).filter(Item.library==self)
         all_items = Query(as_string=query).execute(self)
 
-    def add_item(self, engine_id, metadata, origin, license='creator'):
+    def add_item(self, engine_id, metadata, origin):
         """
         Import a new item into the Library.
         """
+        metadata = json.loads(metadata)
         i = Item(
             engine_id=engine_id,
             library=self,
             origin=origin,
-            license=license
         )
 
         metadata['date_published'] = datetime.datetime.now().isoformat()
@@ -116,12 +116,15 @@ class Item(Base):
     id = Column(Integer, primary_key=True)
     library_identity = Column(ForeignKey("giotto_library.identity"))
     origin = Column(String, nullable=False)
-    license = Column(String, nullable=False)
     engine_id = Column(ForeignKey("giotto_uploadengine.id"))
     engine = relationship('UploadEngine')
 
     def human_size(self):
         return sizeof_fmt(self.size)
+
+    @property
+    def size(self):
+        return int(self.get_metadata('size'))
 
     @classmethod
     def get(cls, id, user=LOGGED_IN_USER):
