@@ -14,7 +14,7 @@ from giotto.control import Redirection
 from utils import sizeof_fmt
 
 from sqlalchemy import func
-session = get_config('session')
+session = get_config('db_session')
 
 def execute_query(query):
     return "foo"
