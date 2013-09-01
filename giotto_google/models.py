@@ -15,12 +15,14 @@ def get_google_flow(scheme="http"):
     )
 
 def make_callback_model(callback, scheme='http'):
-    def google_api_callback(code, all=ALL_DATA, user=LOGGED_IN_USER):
+    def google_api_callback(code=None, all=ALL_DATA, user=LOGGED_IN_USER):
         """
         After authenticating with the Google API Auth server, it redirects the user
         back to this program, where `code` is exchanged for an auth token, and
         then stored.
         """
+        if not code:
+            raise Exception("No code man")
         flow = get_google_flow(scheme)
         credentials = flow.step2_exchange(code)
         if callback:

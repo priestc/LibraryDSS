@@ -60,13 +60,13 @@ def make_callback_model(callback):
 
     return dropbox_api_callback
 
-def get_dropbox_authorize_url(user):
+def get_dropbox_authorize_url(user, callback_scheme='http'):
     """
     Get the url for sending the user to authenticate with dropbox.
     """
     sess = get_dropbox_session()
     request_token = sess.obtain_request_token()
-    url = "%s/dropbox/oauth1callback" % get_config("domain")
+    url = "%s://%s/dropbox/oauth1callback" % (callback_scheme, get_config("domain"))
     DropboxRequestToken.create(user, request_token)
     return sess.build_authorize_url(request_token, oauth_callback=url)
 

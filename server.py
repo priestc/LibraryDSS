@@ -101,7 +101,7 @@ def engine_dashboard(user=LOGGED_IN_USER):
 
     dropbox_url = None
     if 'dropbox' not in names:
-        dropbox_url = get_dropbox_authorize_url(user)
+        dropbox_url = get_dropbox_authorize_url(user, callback_scheme='https')
 
     return {
         'identity': user.username,
