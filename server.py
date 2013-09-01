@@ -14,15 +14,15 @@ from giotto.control import Redirection
 from utils import sizeof_fmt
 
 from sqlalchemy import func
-session = get_config('db_session')
 
 def execute_query(query):
     return "foo"
 
 def connections(user=LOGGED_IN_USER):
-    return {'site_domain': get_config('site_domain'), 'username': user.username}
+    return {'site_domain': get_config('domain'), 'username': user.username}
 
 def home(user=LOGGED_IN_USER):
+    session = get_config('db_session')
     library_count = session.query(Library).count()
     item_count = session.query(Item).count() or 0
     total_size = 0 #session.query(func.sum(Item.size))[0][0] or 0
@@ -67,6 +67,7 @@ def items(query=None, user=LOGGED_IN_USER, identity=USER):
         raise NotAuthorized()
 
     library = Library.get(identity)
+    session = get_config('db_session')
     items = session.query(Item).join(MetaData).filter(Item.library==library)
     query_json = '[]'
 
@@ -118,14 +119,14 @@ def backup(identity=USER):
     return library.items
 
 def update_engine(engine_id, data=ALL_DATA, user=LOGGED_IN_USER):
-    session = get_config('session')
+    session = get_config('db_session')
     engine = session.query(UploadEngine, Library)\
                     .filter(UploadEngine.id==engine_id)\
                     .filter(Library.identity==user.username).first()
     return {'e': engine}
 
 def migrate_off_engine(engine_id, user=LOGGED_IN_USER):
-    session = get_config('session')
+    session = get_config('db_session')
     engine = session.query(UploadEngine, Library)\
                     .filter(UploadEngine.id==engine_id)\
                     .filter(Library.identity==user.username).first()
@@ -133,7 +134,7 @@ def migrate_off_engine(engine_id, user=LOGGED_IN_USER):
     return Redirection('/settings')
 
 def migrate_onto_engine(engine_id, user=LOGGED_IN_USER):
-    session = get_config('session')
+    session = get_config('db_session')
     engine = session.query(UploadEngine, Library)\
                     .filter(UploadEngine.id==engine_id)\
                     .filter(Library.identity==user.username).first()
