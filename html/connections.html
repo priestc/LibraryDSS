@@ -48,6 +48,11 @@
     .hidden_new_connection_fields {
         display: none;
     }
+    .existing_connection {
+        background: pink;
+        padding: 10px;
+        border: 1px solid green;
+    }
 </style>
 
 {% endblock %}
@@ -75,8 +80,11 @@
 </div>
 
 <div id="existing_connections">
-    {% for connection in data.connections %}
-        {{ connection }}<br>
+    {% for connection in data.existing_connections %}
+        <div class="existing_connection">
+            <h3>{{ connection.identity }}</h3>
+
+        </div>
     {% else %}
         <h3>No existing connections</h3>
     {% endfor %}
