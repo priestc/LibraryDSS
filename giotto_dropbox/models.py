@@ -24,7 +24,7 @@ class DropboxRequestToken(Base):
 
     @classmethod
     def create(cls, user, token):
-        session = get_config("session")
+        session = get_config("db_session")
         session.query(cls).filter(cls.user==user).delete()
         self = cls(user=user, secret=token.secret, key=token.key)
         session.add(self)
@@ -37,7 +37,7 @@ class DropboxRequestToken(Base):
         This function should only be called after the user has clicked on the
         authorize URL and has confirmed the authorization.
         """
-        s = get_config("session")
+        s = get_config("db_session")
         ret = s.query(cls).filter(cls.user==user).first()
         return session.OAuthToken(key=ret.key, secret=ret.secret)
 
@@ -66,7 +66,7 @@ def get_dropbox_authorize_url(user):
     """
     sess = get_dropbox_session()
     request_token = sess.obtain_request_token()
-    url = "%s/dropbox/oauth1callback" % get_config("server_url")
+    url = "%s/dropbox/oauth1callback" % get_config("domain")
     DropboxRequestToken.create(user, request_token)
     return sess.build_authorize_url(request_token, oauth_callback=url)
 
