@@ -9,7 +9,7 @@ import os
 from giotto import get_config
 
 Base = get_config('Base')
-session = get_config('session')
+session = get_config('db_session')
 
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime, Boolean, func, desc, PickleType
 from sqlalchemy.orm import relationship
