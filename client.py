@@ -75,7 +75,6 @@ def _upload_to_engine(identity, filename, size, hash):
     except requests.exceptions.ConnectionError as exc:
         raise Exception("Could not connect to Library Server: %s, %s" % (url, exc))
 
-    import debug
     code = response.status_code
     if code != 200:
         msg = response.error

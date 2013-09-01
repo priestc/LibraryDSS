@@ -13,14 +13,14 @@ def get_google_flow(scheme="http"):
         redirect_uri='%s://%s/google/oauth2callback' % (scheme, get_config('domain')),
     )
 
-def make_callback_model(callback):
+def make_callback_model(callback, scheme='http'):
     def google_api_callback(code, all=ALL_DATA, user=LOGGED_IN_USER):
         """
         After authenticating with the Google API Auth server, it redirects the user
         back to this program, where `code` is exchanged for an auth token, and
         then stored.
         """
-        flow = get_google_flow(get_config('domain'))
+        flow = get_google_flow(scheme)
         credentials = flow.step2_exchange(code)
         if callback:
             return callback(user, credentials)
