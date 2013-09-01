@@ -15,14 +15,11 @@ from giotto_google.upload import upload as upload_google_drive
 
 from utils import do_hash
 
-def query(query):
-    with open(".library_identity.example") as identity_file:
-        identity = identity_file.read().strip()
+def query(query, identity, token=None):
     q = {'query': query}
-    identity_user, identity_url = identity.split('@')
-    url = "http://%s/items.json" % identity_url
+    url = "http://%s/items.json" % identity
     response = requests.get(url, params=q, auth=(identity_user, ''))
-    return json.tool(response.json)
+    return json.tool(response.json())
 
 
 def publish(filename, identity, metadata=ALL_DATA):

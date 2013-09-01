@@ -36,7 +36,7 @@ def post_register_callback(user):
     """
     After a new user signs up, create a Library for them.
     """
-    session = get_config('session')
+    session = get_config('db_session')
     l = Library(identity=user.username)
     session.add(l)
     session.commit()
@@ -155,6 +155,7 @@ manifest = Manifest({
         ),
     }),
     'google': make_google_manifest(
+        scheme='https',
         auth_program_class=AuthenticationRequiredProgram,
         post_auth_callback=google_api_callback
     ),
