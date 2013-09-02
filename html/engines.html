@@ -3,16 +3,44 @@
 {% block extra_head %}
     <script src="/static/engines.js"></script>
     <link rel="stylesheet" href="/static/engines.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.10.3/themes/pepper-grinder/jquery-ui.css" />
+    <script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <script>
+    $(function() {
+        $('#add_s3_link').click(function() {
+            $("#s3_popup").dialog({title: "Add S3", width: '400px'});
+            return false;
+        });
+    });
+    </script>
 {% endblock %}
 
 {% block content %}
+<div id="s3_popup">
+    <form action="/addS3" method="post">
+        <label for="access_token">Access Token:</label> <input type="text" name="access_token"><br>
+        <label for="secret_key">Secret Key:</label> <input type="text" name="secret_key">
+        <input type="submit" value="Add">
+    </form>
+</div>
+
     <h1>Storage Engines</h1>
     {% if data.google_drive_url %}
-        <a href="{{ data.google_drive_url }}">Attach Google Drive</a>
+        <div id="engine_add">
+            <img class="engine_logo" src="/static/drive_logo.png"> <a href="{{ data.google_drive_url }}">Attach Google Drive</a>
+        </div>
     {% endif %}
 
     {% if data.dropbox_url %}
-        <a href="{{ data.dropbox_url }}">Attach Dropbox</a>
+        <div id="engine_add">
+            <img class="engine_logo" src="/static/dropbox_logo.png"><a href="{{ data.dropbox_url }}">Attach Dropbox</a>
+        </div>
+    {% endif %}
+
+    {% if not data.has_s3 %}
+        <div id="engine_add">
+            <img class="engine_logo" src="/static/amazon_logo.png"> <a href="#" id="add_s3_link">Attach Amazon S3</a>
+        </div>
     {% endif %}
 
     {% for engine in data.engines %}

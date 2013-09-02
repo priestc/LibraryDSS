@@ -1,11 +1,13 @@
-input[type=text] {width: 20em}
+input[type=text] {
+    width: 20em
+}
 
 .engine {
     background: #DD99DD;
-    width: 500px;
+    width: 90%;
     border: 1px solid black;
     padding: 5px;
-    margin: 5px;
+    margin: 0 auto 0 auto;
 }
 
 .submit_engine_changes {
@@ -31,4 +33,16 @@ label {
     height: 32px;
     width: 32px;
     margin-right: 5px;
+}
+
+#engine_add {
+    background: lightgray;
+    border: 1px solid black;
+    width: 90%;
+    margin: 0px auto 10px auto;
+    padding: 5px;
+}
+
+#s3_popup {
+    display: none;
 }
