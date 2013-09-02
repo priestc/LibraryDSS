@@ -89,15 +89,14 @@ def items(query=None, user=LOGGED_IN_USER, username=USER):
     """
     Given an LQL query and a library identity, return the items that match.
     """
-    if not identity and (user and user.username):
-        # in the case of an authenticated request through the browser;
-        # no 'identity' will be sent, so just go by username.
-        identity = user.username
-    
+    # in the case of an authenticated request through the browser;
+    # no 'identity' will be sent, so just go by username.
+    identity = "%s@%s" % (user.username or username, get_config('domain'))
+
     if not identity:
         raise NotAuthorized()
 
-    library = Library.get(username=identity)
+    library = Library.get(identity=identity)
     session = get_config('db_session')
     items = session.query(Item).join(MetaData).filter(Item.library==library)
     query_json = '[]'
