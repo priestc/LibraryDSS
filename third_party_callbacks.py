@@ -1,5 +1,5 @@
 from giotto import get_config
-from models import Library, UploadEngine
+from models import Library, StorageEngine
 from giotto_google.models import get_google_flow
 
 def dropbox_api_callback(user, access_token):
@@ -10,7 +10,7 @@ def dropbox_api_callback(user, access_token):
     session = get_config('db_session')
     library = Library.get(username=user.username)
     at = {'key': access_token.key, 'secret': access_token.secret}
-    engine = UploadEngine(name="dropbox", connection_data=at, library=library)
+    engine = StorageEngine(name="dropbox", connection_data=at, library=library)
     session.add(engine)
     session.commit()
 
@@ -24,7 +24,7 @@ def google_api_callback(user, credentials):
     """
     session = get_config('db_session')
     library = Library.get(username=user.username)
-    engine = UploadEngine(name="googledrive", connection_data=credentials, library=library)
+    engine = StorageEngine(name="googledrive", connection_data=credentials, library=library)
     session.add(engine)
     session.commit()
 

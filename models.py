@@ -51,7 +51,7 @@ class Connection(Base):
         else:
             my_auth_token = random_string(32)
             response = requests.get(
-                "https://%s/api/requestAuthorizedConnection" % domain,
+                "https://%s/api/requestAuthorization" % domain,
                 data={
                     'target_identity': identity,
                     'requesting_identity': library.identity,
@@ -151,7 +151,7 @@ class Library(Base):
         return x
 
     def add_storage(self, engine, connection_data):
-        e = UploadEngine(library=self, name=engine, connection_data=connection_data)
+        e = StorageEngine(library=self, name=engine, connection_data=connection_data)
         session = get_config('db_session')
         session.add(e)
         session.commit()
@@ -188,7 +188,7 @@ class Item(Base):
     id = Column(Integer, primary_key=True)
     library_identity = Column(ForeignKey("giotto_library.identity"))
     origin = Column(String, nullable=False)
-    storage_engine_id = Column(ForeignKey("giotto_uploadengine.id"))
+    storage_engine_id = Column(ForeignKey("giotto_storageengine.id"))
     storage_engine = relationship('StorageEngine')
     date_published = Column(DateTime)
 
@@ -282,7 +282,7 @@ class MetaData(Base):
     date_value = Column(DateTime, nullable=True)
     
     item_id = Column(ForeignKey("giotto_item.id"))
-    item = relationship('Item', primaryjoin="Item.id==MetaData.item_id", backref="metadata")
+    item = relationship('Item', primaryjoin="Item.id==MetaData.item_id", backref="metadatas")
 
     def __repr__(self):
         return "[id=%s] %s=%s" % (self.item.hash[:5]+ '...', self.key, self.value)
@@ -297,7 +297,7 @@ class MetaData(Base):
             return self.date_value
         return self.value
 
-class UploadEngine(Base):
+class StorageEngine(Base):
     id = Column(Integer, primary_key=True)
     library_identity = Column(ForeignKey("giotto_library.identity"))
     library = relationship("Library", backref="engines")
@@ -312,7 +312,7 @@ class UploadEngine(Base):
         """
         # retired default is False
         kwargs['retired'] = False if not 'retired' in kwargs else kwargs['retired']
-        super(UploadEngine, self).__init__(*args, **kwargs)
+        super(StorageEngine, self).__init__(*args, **kwargs)
 
     def todict(self):
         cd = base64.b64encode(pickle.dumps(self.connection_data))

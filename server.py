@@ -1,6 +1,6 @@
 import httplib2
 
-from models import Library, UploadEngine, Item, MetaData, Connection
+from models import Library, StorageEngine, Item, MetaData, Connection
 from giotto.primitives import ALL_DATA, USER, LOGGED_IN_USER
 from giotto.exceptions import NotAuthorized
 from giotto.utils import jsonify
@@ -28,11 +28,14 @@ def show_connections(user=LOGGED_IN_USER):
 
 def connection_submit(identity, request_auth=False, user=LOGGED_IN_USER, filter_query=None, request_query=None, request_message=None):
     library = Library.get(username=user.username)
-    library.connection_details(identity, filter_query, request_query, request_message)
-    return None
+    library.connection_details(identity, filter_query, request_query, request_message, pending=False)
 
-def request_authorization():
-    pass
+def request_authorization(target_identity, requesting_identity, requesting_token, request_message, request_query):
+    """
+    Called by other people who wish to connect with me.
+    """
+    library = library.get(identity=target_identity)
+    library.connection_details()
 
 def home(user=LOGGED_IN_USER):
     session = get_config('db_session')
@@ -49,8 +52,12 @@ def home(user=LOGGED_IN_USER):
 def dashboard(user=LOGGED_IN_USER):
     session = get_config('db_session')
     identity = "%s@%s" % (user.username, get_config('domain'))
-    conns = session.query(Connection).filter(Library.identity==identity).order_by(Connection.date_created.desc())
-    pubs = session.query(Item).filter(Library.identity==identity).order_by(Item.date_published.desc())
+    conns = session.query(Connection)\
+                   .filter(Library.identity==identity)\
+                   .order_by(Connection.date_created.desc())
+    pubs = session.query(Item)\
+                  .filter(Library.identity==identity)\
+                  .order_by(Item.date_published.desc())
     return {
         'latest_connections': conns,
         'latest_publications': pubs,
@@ -144,23 +151,23 @@ def backup(username=USER):
 
 def update_engine(engine_id, data=ALL_DATA, user=LOGGED_IN_USER):
     session = get_config('db_session')
-    engine = session.query(UploadEngine, Library)\
-                    .filter(UploadEngine.id==engine_id)\
+    engine = session.query(StorageEngine, Library)\
+                    .filter(StorageEngine.id==engine_id)\
                     .filter(Library.identity==user.username).first()
     return {'e': engine}
 
 def migrate_off_engine(engine_id, user=LOGGED_IN_USER):
     session = get_config('db_session')
-    engine = session.query(UploadEngine, Library)\
-                    .filter(UploadEngine.id==engine_id)\
+    engine = session.query(StorageEngine, Library)\
+                    .filter(StorageEngine.id==engine_id)\
                     .filter(Library.identity==user.username).first()
     engine.migrate_off()
     return Redirection('/settings')
 
 def migrate_onto_engine(engine_id, user=LOGGED_IN_USER):
     session = get_config('db_session')
-    engine = session.query(UploadEngine, Library)\
-                    .filter(UploadEngine.id==engine_id)\
+    engine = session.query(StorageEngine, Library)\
+                    .filter(StorageEngine.id==engine_id)\
                     .filter(Library.identity==user.username).first()
     engine.migrate_onto()
     return Redirection('/settings')

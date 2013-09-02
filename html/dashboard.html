@@ -5,9 +5,21 @@
 
 {% block content %}
 <h1>Dashboard</h1>
+<h2>Recently added connections:</h2>
 <ul>
 {% for conn in data.latest_connections %}
-    <li>{{conn}}</li>
+    <li>{{ conn }}</li>
+{% else %}
+    <li><em>No recently added connections</em></li>
+{% endfor %}
+</ul>
+
+<h2>Recently published items:</h2>
+<ul>
+{% for pub in data.latest_publications %}
+    <li>{{ pub }}</li>
+{% else %}
+    <li><em>No recently added publications</em></li>
 {% endfor %}
 </ul>
 {% endblock %}
