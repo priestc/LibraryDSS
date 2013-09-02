@@ -9,15 +9,21 @@ from giotto import get_config
 from apiclient.discovery import build
 from giotto_google.models import get_google_flow
 from giotto_dropbox.models import get_dropbox_authorize_url
-
+from giotto_s3 import get_bucket_name
 from giotto.control import Redirection
 from utils import sizeof_fmt
 
 from sqlalchemy import func
 
 def addS3(secret_key, access_token, user=LOGGED_IN_USER):
+    bucket_name = get_bucket_name(user.username, get_config('domain'), access_token, secret_key)
     library = Library.get(username=user.username)
-    library.add_storage('s3', {'aws_key': access_token, 'aws_secret': secret_key})
+    library.add_storage('s3', {
+        'aws_key': access_token,
+        'aws_secret': secret_key,
+        'bucket_name': bucket_name
+        }
+    )
 
 def execute_query(query):
     return "foo"

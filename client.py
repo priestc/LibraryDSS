@@ -12,6 +12,7 @@ from giotto.primitives import ALL_DATA
 from giotto_s3.upload import upload as upload_s3
 from giotto_dropbox.upload import upload as upload_dropbox
 from giotto_google.upload import upload as upload_google_drive
+from giotto import get_config
 
 from utils import do_hash
 

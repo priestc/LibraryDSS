@@ -69,9 +69,7 @@
                 <hr>
 
                 {% if engine.name == 's3' %}
-                <label for="s3_bucket_name">Bucket Name:</label>
-                <input id="s3_bucket_name" name="bucket_name" type="text" value="{{ engine.connection_data['bucket_name'] }}">
-                <br>
+                <p>Bucket Name: <strong>{{ engine.connection_data['bucket_name'] }}</strong></p>
                 
                 <label for="s3_secret_key">Secret Key:</label>
                 <input id="s3_secret_key" name="secret_key" type="text" class="secret_key" value="{{ engine.connection_data['aws_secret'] }}">

@@ -57,6 +57,11 @@ manifest = Manifest({
                 html=jinja_template("blog.html"),
             ),
         ),
+        'music': Program(
+            view=BasicView(
+                html=jinja_template("music.html")
+            ),
+        )
     }),
     'auth': create_auth_manifest(
         post_register_callback=post_register_callback,
