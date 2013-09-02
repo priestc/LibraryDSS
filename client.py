@@ -69,7 +69,7 @@ def _upload_to_engine(identity, filename, size, hash):
     url = "https://%s/api/startPublish.json" % identity
     username = identity.split('@')[0]
     try:
-        response = requests.post(url, data=data, auth=(username, ''), verify=False)
+        response = requests.post(url, data=data, auth=(username, ''), verify=(not get_config('debug')))
     except requests.exceptions.ConnectionError as exc:
         raise Exception("Could not connect to Library Server: %s, %s" % (url, exc))
 
@@ -119,7 +119,7 @@ def _complete_publish(identity, size, hash, url, metadata):
 
     username, domain = identity.split('@')
     data = {'metadata': json.dumps(metadata), 'hash': hash}
-    response = requests.post("https://%s/api/completePublish.json" % domain, data=data, auth=(username, ''), verify=False)
+    response = requests.post("https://%s/api/completePublish.json" % domain, data=data, auth=(username, ''), verify=(not get_config('debug')))
     print "Library server response...", response.content
 
 def is_url(url):
