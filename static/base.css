@@ -4,6 +4,7 @@ body {
     margin: 0px;
     margin-bottom: 10px;
     font-family: Arial;
+    font-size: 14pt;
 }
 
 #content {
@@ -18,12 +19,14 @@ body {
 
 h1 {
     text-align: center;
+    font-size: 36pt;
 }
 
 nav {
     background: beige;
     padding: 10px;
-    border: 0px solid black
+    border: 0px solid black;
+    font-size: 18pt;
 }
 
 .icon-big {
@@ -76,7 +79,7 @@ nav {
 }
 
 a.logo {
-    font-size: xx-large;
+    font-size: 36pt;
     text-decoration: none;
     font-weight: bold;
 }
