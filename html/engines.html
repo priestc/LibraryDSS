@@ -17,7 +17,7 @@
 
 {% block content %}
 <div id="s3_popup">
-    <form action="/addS3" method="post">
+    <form action="/ui/addS3" method="post">
         <label for="access_token">Access Token:</label> <input type="text" name="access_token"><br>
         <label for="secret_key">Secret Key:</label> <input type="text" name="secret_key">
         <input type="submit" value="Add">
@@ -74,11 +74,11 @@
                 <br>
                 
                 <label for="s3_secret_key">Secret Key:</label>
-                <input id="s3_secret_key" name="secret_key" type="text" class="secret_key" value="{{ engine.connection_data['secret_key'] }}">
+                <input id="s3_secret_key" name="secret_key" type="text" class="secret_key" value="{{ engine.connection_data['aws_secret'] }}">
                 <br>
                 
                 <label for="s3_access_key">Access Key:</label>
-                <input id="s3_access_key" name="access_key" type="text" class="access_key" value="{{ engine.connection_data['access_key'] }}">
+                <input id="s3_access_key" name="access_key" type="text" class="access_key" value="{{ engine.connection_data['aws_key'] }}">
                 <br>
                 {% endif %}
 

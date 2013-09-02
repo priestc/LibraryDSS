@@ -25,4 +25,5 @@ if '--run' in sys.argv:
     serve('127.0.0.1', 80, application, ssl=None, use_debugger=True, use_reloader=True)
 
 if '--run-ssl' in sys.argv:
-    serve('127.0.0.1', 443, application, ssl='adhoc', use_debugger=True, use_reloader=True)
+    ctx = ('/Users/chris/Documents/key.crt', '/Users/chris/Documents/key.key')
+    serve('127.0.0.1', 443, application, ssl=ctx, use_debugger=True, use_reloader=True)

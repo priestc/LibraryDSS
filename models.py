@@ -188,8 +188,8 @@ class Library(Base):
         random.shuffle(x)
         return x
 
-    def add_storage(self, engine, connection_data):
-        e = StorageEngine(library=self, name=engine, connection_data=connection_data)
+    def add_storage(self, engine_name, connection_data):
+        e = StorageEngine(library=self, name=engine_name, connection_data=connection_data)
         session = get_config('db_session')
         session.add(e)
         session.commit()

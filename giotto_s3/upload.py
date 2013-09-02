@@ -52,8 +52,8 @@ def upload(source_path, keyname, engine):
     Parallel multipart upload. from http://www.topfstedt.de/weblog/?p=558
     """
     headers = {}
-    aws_key = engine['access_key']
-    aws_secret = engine['secret_key']
+    aws_key = engine['aws_key']
+    aws_secret = engine['aws_secret']
     bucketname = engine['bucket_name']
 
     conn = S3Connection(aws_key, aws_secret)

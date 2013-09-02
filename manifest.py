@@ -119,6 +119,12 @@ manifest = Manifest({
                 )
             )
         ],
+        'addS3': AuthenticationRequiredProgram(
+            model=[server.addS3],
+            view=BasicView(
+                html=Redirection('/engines'),
+            ),
+        ),
     }),
     'api': Manifest({
         'startPublish': AuthenticationProgram(

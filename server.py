@@ -15,6 +15,10 @@ from utils import sizeof_fmt
 
 from sqlalchemy import func
 
+def addS3(secret_key, access_token, user=LOGGED_IN_USER):
+    library = Library.get(username=user.username)
+    library.add_storage('s3', {'aws_key': access_token, 'aws_secret': secret_key})
+
 def execute_query(query):
     return "foo"
 
@@ -154,6 +158,7 @@ def engine_dashboard(user=LOGGED_IN_USER):
         'google_drive_url': google_drive_url,
         'engines': library.storage_engines,
         'dropbox_url': dropbox_url,
+        'has_s3': 's3' in names,
     }
 
 def edit_item(size, hash, user=LOGGED_IN_USER):
