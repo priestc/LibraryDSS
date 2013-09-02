@@ -6,6 +6,8 @@ import hashlib
 import random
 import os
 
+import requests
+
 from giotto import get_config
 
 Base = get_config('Base')
@@ -19,7 +21,7 @@ from giotto.utils import random_string
 from utils import fuzzy_to_datetime, datetime_to_fuzzy, sizeof_fmt, is_date_key
 from LQL import Query
 
-IMMUTABLE_BUILT_IN = ['origin', 'license']
+IMMUTABLE_BUILT_IN = ['origin', 'date_published']
 
 class Connection(Base):
     """
@@ -33,10 +35,36 @@ class Connection(Base):
     my_auth_token = Column(String(32)) # whoever is in possession of this token can access this connection
     their_auth_token = Column(String(32))
     date_created = Column(DateTime)
+    pending = Column(Boolean)
+    pending_message = Column(String)
+    pending_query = Column(PickleType)
     
     def __repr__(self):
         mode = 'follow' if not self.my_auth_token else 'auth'
         return "%s -> %s [%s]" % (self.library.identity, self.identity, mode)
+
+    @classmethod
+    def create_pending_connection(cls, library, identity, their_auth_token, query, message):
+        """
+        Create a 'pending' connection object for when other people request authorization.
+        Its becomes non-pending when the owner of the library accepts the authorization.
+        """
+        conn = cls(
+            library=library,
+            identity=identity,
+            filter_query='',
+            my_auth_token='',
+            their_auth_token=their_auth_token,
+            date_created=datetime.datetime.now(),
+            pending=True,
+            pending_message=message,
+            pending_query=query,
+        )
+
+        session = get_config('db_session')
+        session.add(conn)
+        session.commit()
+        return conn
 
     @classmethod
     def create_connection(cls, library, identity, request_auth=False, filter_query=None, request_query=None, request_message=None):
@@ -50,25 +78,28 @@ class Connection(Base):
             their_auth_token = ''
         else:
             my_auth_token = random_string(32)
-            response = requests.get(
-                "https://%s/api/requestAuthorization" % domain,
+            response = requests.post(
+                "https://%s/api/requestAuthorization.json" % domain,
                 data={
                     'target_identity': identity,
                     'requesting_identity': library.identity,
                     'requesting_token': my_auth_token,
                     'request_message': request_message,
-                    'request_query': request_query,
-                }
+                    'request_query': request_query or '',
+                },
+                verify=(not get_config('debug')),
             )
-            their_auth_token = response.json()['auth_token']
+            if response.status_code != 200 or response.json() != "OK":
+                raise InvalidData("Identity not valid")
 
-        conn =cls(
+        conn = cls(
             library=library,
             identity=identity,
             filter_query=filter_query,
             my_auth_token=my_auth_token,
-            their_auth_token=their_auth_token,
+            their_auth_token='',
             date_created=datetime.datetime.now(),
+            pending=False,
         )
 
         session = get_config('db_session')
@@ -88,10 +119,16 @@ class Library(Base):
         q = session.query(MetaData.value).filter(key=key)
         return q.all()
 
-    def connection_details(self, identity, request_auth=False, filter_query=None, request_query=None, request_message=None):
+    def connection_details(self, identity, **kwargs):
         """
-        Update details of a connection
+        Update details of a connection.
         """
+        their_auth_token = kwargs.pop('their_auth_token', None)
+        request_auth = kwargs.pop('request_auth', False)
+        filter_query = kwargs.pop('filter_query', None)
+        request_query = kwargs.pop('request_query', None)
+        request_message = kwargs.pop('request_message', None)
+
         session = get_config('db_session')
         # try to find existing connection.
         conn = session.query(Connection).filter(Library.identity==identity, Connection.identity==identity).first()
@@ -104,6 +141,7 @@ class Library(Base):
                 request_query=request_query,
                 request_message=request_message,
             )
+
         else:
             conn.filter_query = filter_query
             session.add(conn)

@@ -54,17 +54,34 @@
         border: 1px solid green;
         margin: 5px;
     }
+    .pending_connection {
+        background: #86C67C;
+        padding: 3px;
+        border: 1px solid blue;
+        margin-bottom: 10px;
+    }
 </style>
 
 {% endblock %}
 
 {% block content %}
 <h1>Connections</h1>
+<div id="pending_connections">
+    {% for connection in data.pending_connections %}
+        <div class="pending_connection">
+            <u>/!\</u> Pending Connection: <strong>{{ connection.identity }}</strong> wants to connect with you!
+            <form method="post" action="/acceptConnectionRequest" style="display: inline">
+                <input type="hidden" value="{{ connection.id }}" name="connection_id">
+                <input type="submit" value="Accept">
+            </form>
+        </div>
+    {% endfor %}
+</div>
 <div id="top_part">
     <div id="qrcode"></div>
 
     <div id="new_connection">
-        <h3>Create New Connection</h3>
+        <h3>Create New Connection - {{ data.username }}</h3>
         <form method="post">
             <label for="identity">Identity:</label> <input id="identity" type="text" name="identity">
             <br>

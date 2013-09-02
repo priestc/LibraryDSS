@@ -65,6 +65,12 @@ manifest = Manifest({
         model=[server.backup],
         view=ForceJSONView
     ),
+    'acceptConnectionRequest': AuthenticationRequiredProgram(
+        model=[server.accept_connection_request],
+        view=BasicView(
+            html=lambda m: Redirection('/ui/connections')
+        )
+    ),
     'ui': Manifest({
         'autocomplete': Program(
             model=[server.autocomplete],

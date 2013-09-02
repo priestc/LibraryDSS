@@ -20,22 +20,38 @@ def execute_query(query):
 
 def show_connections(user=LOGGED_IN_USER):
     library = Library.get(username=user.username)
+    conns = library.connections
     return {
         'site_domain': get_config('domain'),
         'username': user.username,
-        'existing_connections': library.connections
+        'existing_connections': [x for x in conns if not x.pending],
+        'pending_connections': [x for x in conns if x.pending]
     }
 
 def connection_submit(identity, request_auth=False, user=LOGGED_IN_USER, filter_query=None, request_query=None, request_message=None):
     library = Library.get(username=user.username)
-    library.connection_details(identity, filter_query, request_query, request_message, pending=False)
+    library.connection_details(
+        identity=identity,
+        filter_query=filter_query,
+        request_auth=request_auth,
+        request_query=request_query,
+        request_message=request_message,
+    )
 
-def request_authorization(target_identity, requesting_identity, requesting_token, request_message, request_query):
+def accept_connection_request(connection_id, user=LOGGED_IN_USER):
+    session = get_config('db_session')
+    connection = session.query(Connection).get(connection_id)
+    connection.pending = False
+    session.add(connection)
+    session.commit()
+
+def request_authorization(target_identity, requesting_identity, requesting_token, request_message, request_query=None):
     """
     Called by other people who wish to connect with me.
     """
-    library = library.get(identity=target_identity)
-    library.connection_details()
+    library = Library.get(identity=target_identity)
+    Connection.create_pending_connection(library, requesting_identity, requesting_token, request_message, request_query)
+    return "OK"
 
 def home(user=LOGGED_IN_USER):
     session = get_config('db_session')
