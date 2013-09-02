@@ -5,5 +5,9 @@
 
 {% block content %}
 <h1>Dashboard</h1>
-Your dashboard
+<ul>
+{% for conn in data.latest_connections %}
+    <li>{{conn}}</li>
+{% endfor %}
+</ul>
 {% endblock %}

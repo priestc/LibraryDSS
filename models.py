@@ -175,6 +175,7 @@ class Library(Base):
             engine_id=engine_id,
             library=self,
             origin=origin,
+            date_published=datetime.datetime.now(),
         )
 
         metadata['date_published'] = datetime.datetime.now().isoformat()
@@ -187,8 +188,9 @@ class Item(Base):
     id = Column(Integer, primary_key=True)
     library_identity = Column(ForeignKey("giotto_library.identity"))
     origin = Column(String, nullable=False)
-    engine_id = Column(ForeignKey("giotto_uploadengine.id"))
-    engine = relationship('UploadEngine')
+    storage_engine_id = Column(ForeignKey("giotto_uploadengine.id"))
+    storage_engine = relationship('StorageEngine')
+    date_published = Column(DateTime)
 
     def human_size(self):
         return sizeof_fmt(self.size)

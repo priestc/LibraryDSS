@@ -92,6 +92,7 @@ manifest = Manifest({
             ),
         ],
         'dashboard': AuthenticationRequiredProgram(
+            model=[server.dashboard],
             view=BasicView(
                 html=jinja_template('dashboard.html')
             )

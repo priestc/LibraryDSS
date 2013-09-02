@@ -1,6 +1,6 @@
 import httplib2
 
-from models import Library, UploadEngine, Item, MetaData
+from models import Library, UploadEngine, Item, MetaData, Connection
 from giotto.primitives import ALL_DATA, USER, LOGGED_IN_USER
 from giotto.exceptions import NotAuthorized
 from giotto.utils import jsonify
@@ -29,6 +29,7 @@ def show_connections(user=LOGGED_IN_USER):
 def connection_submit(identity, request_auth=False, user=LOGGED_IN_USER, filter_query=None, request_query=None, request_message=None):
     library = Library.get(username=user.username)
     library.connection_details(identity, filter_query, request_query, request_message)
+    return None
 
 def request_authorization():
     pass
@@ -43,6 +44,16 @@ def home(user=LOGGED_IN_USER):
         'library_count': library_count,
         'item_count': item_count,
         'total_size': sizeof_fmt(total_size)
+    }
+
+def dashboard(user=LOGGED_IN_USER):
+    session = get_config('db_session')
+    identity = "%s@%s" % (user.username, get_config('domain'))
+    conns = session.query(Connection).filter(Library.identity==identity).order_by(Connection.date_created.desc())
+    pubs = session.query(Item).filter(Library.identity==identity).order_by(Item.date_published.desc())
+    return {
+        'latest_connections': conns,
+        'latest_publications': pubs,
     }
 
 def start_publish(size, hash, username=USER):

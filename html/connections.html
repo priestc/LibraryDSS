@@ -92,7 +92,7 @@
 </div>
 
 <script>
-    $('#qrcode').qrcode("{{ data.username }}@{{ data.site_domain }}");
+    $('#qrcode').qrcode("library://{{ data.username }}@{{ data.site_domain }}");
     $('#request_auth').click(function(){
         if ($(this).is(":checked")) {
             $('.hidden_new_connection_fields').show();
