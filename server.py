@@ -138,7 +138,7 @@ def items(query=None, user=LOGGED_IN_USER, username=USER):
 
 def engine_dashboard(user=LOGGED_IN_USER):
     library = Library.get(username=user.username)
-    names = [x.name for x in library.engines]
+    names = [x.name for x in library.storage_engines]
     
     google_drive_url = None
     if 'googledrive' not in names:
@@ -152,7 +152,7 @@ def engine_dashboard(user=LOGGED_IN_USER):
     return {
         'identity': user.username,
         'google_drive_url': google_drive_url,
-        'engines': library.engines,
+        'engines': library.storage_engines,
         'dropbox_url': dropbox_url,
     }
 

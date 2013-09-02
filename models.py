@@ -338,7 +338,7 @@ class MetaData(Base):
 class StorageEngine(Base):
     id = Column(Integer, primary_key=True)
     library_identity = Column(ForeignKey("giotto_library.identity"))
-    library = relationship("Library", backref="engines")
+    library = relationship("Library", backref="storage_engines")
     name = Column(String, nullable=False)
     retired = Column(Boolean)
     connection_data = Column(PickleType)
@@ -380,7 +380,7 @@ class StorageEngine(Base):
         """
         session = get_config('db_session')
         human = sizeof_fmt if human else lambda x: x
-        items = session.query(Item).filter_by(engine_id=self.id).all()
+        items = session.query(Item).filter_by(storage_engine_id=self.id).all()
         return human(sum(x.size for x in items))
 
     def get_total_items(self):
@@ -388,7 +388,7 @@ class StorageEngine(Base):
         Return total number of items stored onto this storage engine.
         """
         session = get_config('db_session')
-        return session.query(Item).filter_by(engine_id=self.id).count()
+        return session.query(Item).filter_by(storage_engine_id=self.id).count()
 
 def configure():
     """
