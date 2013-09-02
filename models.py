@@ -32,6 +32,7 @@ class Connection(Base):
     filter_query = Column(PickleType) # the query object that defines the files
     my_auth_token = Column(String(32)) # whoever is in possession of this token can access this connection
     their_auth_token = Column(String(32))
+    date_created = Column(DateTime)
     
     def __repr__(self):
         mode = 'follow' if not self.my_auth_token else 'auth'
@@ -66,7 +67,8 @@ class Connection(Base):
             identity=identity,
             filter_query=filter_query,
             my_auth_token=my_auth_token,
-            their_auth_token=their_auth_token
+            their_auth_token=their_auth_token,
+            date_created=datetime.datetime.now(),
         )
 
         session = get_config('db_session')

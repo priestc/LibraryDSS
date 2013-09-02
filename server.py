@@ -19,7 +19,6 @@ def execute_query(query):
     return "foo"
 
 def show_connections(user=LOGGED_IN_USER):
-    #import debug
     library = Library.get(username=user.username)
     return {
         'site_domain': get_config('domain'),
@@ -30,6 +29,9 @@ def show_connections(user=LOGGED_IN_USER):
 def connection_submit(identity, request_auth=False, user=LOGGED_IN_USER, filter_query=None, request_query=None, request_message=None):
     library = Library.get(username=user.username)
     library.connection_details(identity, filter_query, request_query, request_message)
+
+def request_authorization():
+    pass
 
 def home(user=LOGGED_IN_USER):
     session = get_config('db_session')

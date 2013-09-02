@@ -91,37 +91,43 @@ manifest = Manifest({
                 view=BasicView(),
             ),
         ],
-        'dashboard': Program(
+        'dashboard': AuthenticationRequiredProgram(
             view=BasicView(
                 html=jinja_template('dashboard.html')
             )
         ),
         'connections': [
-            AuthenticationProgram(
+            AuthenticationRequiredProgram(
                 controllers=['http-get'],
                 model=[server.show_connections],
                 view=BasicView(
                     html=jinja_template("connections.html")
                 )
             ),
-            AuthenticationProgram(
+            AuthenticationRequiredProgram(
                 controllers=['http-post'],
                 model=[server.connection_submit],
                 view=BasicView(
-                    html=Redirection('/connections')
+                    html=Redirection('/ui/connections')
                 )
             )
         ],
     }),
     'api': Manifest({
-        'startPublish': Program(
+        'startPublish': AuthenticationProgram(
             controllers=['http-post'],
             model=[server.start_publish],
             view=ForceJSONView,
         ),
-        'completePublish': Program(
+        'completePublish': AuthenticationProgram(
             controllers=['http-post'],
             model=[server.finish_publish, "OK"],
+            view=BasicView,
+        ),
+        'requestAuthorization': Program(
+            description="API Endpoint for incoming authorization requests",
+            controllers=['http-post'],
+            model=[server.request_authorization],
             view=BasicView,
         ),
         'query': Program(
@@ -180,5 +186,5 @@ manifest = Manifest({
 
         ),
     }),
-    'static': StaticServe('/static/'),
+    'static': StaticServe(),
 })
