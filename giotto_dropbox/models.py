@@ -5,22 +5,19 @@ from giotto import get_config
 from giotto.contrib.auth.models import User
 from giotto.control import Redirection
 from giotto.primitives import LOGGED_IN_USER
-
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime, Boolean, func, desc
-from sqlalchemy.orm import relationship
+from django.db import models
 
 from dropbox import session as dropbox_session
 
 Base = get_config("Base")
 
-class DropboxRequestToken(Base):
+class DropboxRequestToken(models.Model):
     """
     Table for storing request token as part of th authentication process.
     """
-    user_id = Column(ForeignKey("giotto_user.username"), primary_key=True)
-    user = relationship(User)
-    secret = Column(String)
-    key = Column(String)
+    user = models.ForeignKey(User, primary_key=True)
+    secret = models.CharField(max_length=128)
+    key = models.CharField(max_length=128)
 
     @classmethod
     def create(cls, user, token):
