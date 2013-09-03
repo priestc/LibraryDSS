@@ -5,6 +5,7 @@ import json
 import hashlib
 import random
 import os
+import hmac
 
 import requests
 
@@ -12,8 +13,8 @@ from giotto import get_config
 
 Base = get_config('Base')
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime, Boolean, func, desc, PickleType
-from sqlalchemy.orm import relationship
+from django.db import models
+#from picklefield.fields import PickledObjectField
 from giotto.primitives import LOGGED_IN_USER
 from giotto.exceptions import DataNotFound
 from giotto.utils import random_string
@@ -23,23 +24,21 @@ from LQL import Query
 
 IMMUTABLE_BUILT_IN = ['origin', 'date_published']
 
-class Connection(Base):
+class Connection(models.Model):
     """
     Represents a set of files that get shared between two libraries.
     """
-    id = Column(Integer, primary_key=True)
-    library_id = Column(ForeignKey("giotto_library.identity"))
-    library = relationship('Library', backref="connections")
-    identity = Column(String) # full identity of connecting library (username@domain).
-    filter_query = Column(PickleType) # the query object that defines the files
-    my_auth_token = Column(String(32)) # whoever is in possession of this token can access this connection
-    their_auth_token = Column(String(32))
-    date_created = Column(DateTime)
-    pending = Column(Boolean)
-    pending_message = Column(String)
-    pending_query = Column(PickleType)
+    library = models.ForeignKey('Library')
+    identity = models.CharField(max_length=256) # full identity of connecting library (username@domain).
+    #filter_query = PickledObjectField() # the query object that defines the files
+    my_auth_token = models.CharField(max_length=32) # whoever is in possession of this token can access this connection
+    their_auth_token = models.CharField(max_length=32)
+    date_created = models.DateTimeField()
+    pending = models.BooleanField(default=False)
+    pending_message = models.TextField()
+    #pending_query = PickledObjectField()
     
-    def __repr__(self):
+    def __unicode__(self):
         mode = 'follow' if not self.my_auth_token else 'auth'
         return "%s -> %s [%s]" % (self.library.identity, self.identity, mode)
 
@@ -49,22 +48,17 @@ class Connection(Base):
         Create a 'pending' connection object for when other people request authorization.
         Its becomes non-pending when the owner of the library accepts the authorization.
         """
-        conn = cls(
+        return cls.objects.create(
             library=library,
             identity=identity,
-            filter_query='',
+            #filter_query='',
             my_auth_token='',
             their_auth_token=their_auth_token,
             date_created=datetime.datetime.now(),
             pending=True,
             pending_message=message,
-            pending_query=query,
+            #pending_query=query,
         )
-
-        session = get_config('db_session')
-        session.add(conn)
-        session.commit()
-        return conn
 
     @classmethod
     def create_connection(cls, library, identity, request_auth=False, filter_query=None, request_query=None, request_message=None):
@@ -92,7 +86,7 @@ class Connection(Base):
             if response.status_code != 200 or response.json() != "OK":
                 raise InvalidData("Identity not valid")
 
-        conn = cls(
+        return cls.objects.create(
             library=library,
             identity=identity,
             filter_query=filter_query,
@@ -102,17 +96,11 @@ class Connection(Base):
             pending=False,
         )
 
-        session = get_config('db_session')
-        session.add(conn)
-        session.commit()
-        return conn
+class Library(models.Model):
+    identity = models.CharField(primary_key=True, max_length=256)
+    items = models.ManyToManyField('Item')
 
-class Library(Base):
-    identity = Column(String, primary_key=True)
-    password = Column(String)
-    items = relationship('Item', primaryjoin="Library.identity==Item.library_identity", backref="library")
-
-    def __repr__(self):
+    def __unicode__(self):
         return "%s (%s)" % (self.identity, len(self.items))
 
     def all_values_for_key(self, user, key):
@@ -129,9 +117,8 @@ class Library(Base):
         request_query = kwargs.pop('request_query', None)
         request_message = kwargs.pop('request_message', None)
 
-        session = get_config('db_session')
         # try to find existing connection.
-        conn = session.query(Connection).filter(Library.identity==identity, Connection.identity==identity).first()
+        conn = Connection.objects.filter(library__identity==self.identity, identity==identity).first()
         if not conn:
             Connection.create_connection(
                 library=self,
@@ -144,8 +131,7 @@ class Library(Base):
 
         else:
             conn.filter_query = filter_query
-            session.add(conn)
-            session.commit()
+            conn.save()
 
     @classmethod
     def get(cls, identity=None, username=None):
@@ -154,8 +140,8 @@ class Library(Base):
         """
         if not identity:
             identity = "%s@%s" % (username, get_config('domain'))
-        session = get_config('db_session')
-        return session.query(cls).get(identity)
+
+        return cls.objects.get(identity)
 
     def has(self, size=None, hash=None):
         """
@@ -207,7 +193,6 @@ class Library(Base):
         """
         Import a new item into the Library.
         """
-        session = get_config('db_session')
         metadata = json.loads(metadata)
         i = Item(
             engine_id=engine_id,
@@ -217,18 +202,15 @@ class Library(Base):
         )
 
         metadata['date_published'] = datetime.datetime.now().isoformat()
-
         i.reset_metadata(metadata)
-        session.add(i)
-        session.commit()
+        i.save()
 
-class Item(Base):
-    id = Column(Integer, primary_key=True)
-    library_identity = Column(ForeignKey("giotto_library.identity"))
-    origin = Column(String, nullable=False)
-    storage_engine_id = Column(ForeignKey("giotto_storageengine.id"))
-    storage_engine = relationship('StorageEngine')
-    date_published = Column(DateTime)
+class Item(models.Model):
+    library = models.ForeignKey(Library)
+    storage_engine = models.ForeignKey('StorageEngine')
+
+    origin = models.CharField(max_length=256, null=False, blank=False)
+    date_published = models.DateTimeField()
 
     def human_size(self):
         return sizeof_fmt(self.size)
@@ -294,7 +276,6 @@ class Item(Base):
         Return all metadata for this item. Sorted by key name alphabetical.
         mutable: only include fields that can be changed
         """
-        session = get_config('db_session')
         query = session.query(MetaData).filter_by(item=self).order_by(MetaData.key)
         meta = {m.key: m.get_value() for m in query}
         
@@ -313,14 +294,12 @@ class Item(Base):
     def todict(self):
         return self.get_all_metadata()
 
-class MetaData(Base):
-    id = Column(Integer, primary_key=True)
-    key = Column(String)
-    value = Column(String)
-    date_value = Column(DateTime, nullable=True)
-    
-    item_id = Column(ForeignKey("giotto_item.id"))
-    item = relationship('Item', primaryjoin="Item.id==MetaData.item_id", backref="metadatas")
+class MetaData(models.Model):
+    key = models.TextField(blank=False, null=False)
+    string_value = models.TextField(blank=False, null=False)
+    date_value = models.DateTimeField()
+    num_value = models.FloatField()
+    item = models.ForeignKey('Item')
 
     def __repr__(self):
         return "[id=%s] %s=%s" % (self.item.hash[:5]+ '...', self.key, self.value)
@@ -335,13 +314,11 @@ class MetaData(Base):
             return self.date_value
         return self.value
 
-class StorageEngine(Base):
-    id = Column(Integer, primary_key=True)
-    library_identity = Column(ForeignKey("giotto_library.identity"))
-    library = relationship("Library", backref="storage_engines")
-    name = Column(String, nullable=False)
-    retired = Column(Boolean)
-    connection_data = Column(PickleType)
+class StorageEngine(models.Model):
+    library = models.ForeignKey("Library")
+    name = models.CharField(max_length=128)
+    retired = models.BooleanField()
+    connection_data = models.TextField()
 
     def __init__(self, *args, **kwargs):
         """
@@ -390,8 +367,11 @@ class StorageEngine(Base):
         session = get_config('db_session')
         return session.query(Item).filter_by(storage_engine_id=self.id).count()
 
-def configure():
-    """
-    For changing configuration for the server.
-    """
-    return
+    def sign_aws_policy(self, policy_document):
+        AWS_SECRET_ACCESS_KEY = self.connection_data['aws_secret']
+        if not AWS_SECRET_ACCESS_KEY:
+            raise Exception("Can not generate policy and signature")
+        policy = base64.b64encode(policy_document)
+        signature = base64.b64encode(hmac.new(AWS_SECRET_ACCESS_KEY, policy, hashlib.sha1).digest())
+        return policy, signature
+

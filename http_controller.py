@@ -11,6 +11,9 @@ import machine
 initialize(config, secrets, machine)
 from giotto import get_config
 
+import os
+os.environ["DJANGO_SETTINGS_MODULE"] = "config"
+
 from manifest import manifest
 
 mock = '--model-mock' in sys.argv

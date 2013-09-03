@@ -8,14 +8,14 @@ from giotto.contrib.static.programs import StaticServe
 from giotto.primitives import LOGGED_IN_USER
 from giotto import get_config
 
-from models import Item, Library, configure
-import client
-import server
+
+from models import client
+from models import server
 
 from giotto_dropbox.manifest import make_dropbox_manifest
 from giotto_google.manifest import make_google_manifest
 
-from third_party_callbacks import dropbox_api_callback, google_api_callback
+from models.third_party_callbacks import dropbox_api_callback, google_api_callback
 
 def test_wrapper():
     from test import functional_test
@@ -32,10 +32,9 @@ def post_register_callback(user):
     """
     After a new user signs up, create a Library for them.
     """
-    session = get_config('db_session')
-    l = Library(identity="%s@%s" % (user.username, get_config('domain')))
-    session.add(l)
-    session.commit()
+    from models.models import Library
+    id="%s@%s" % (user.username, get_config('domain'))
+    Library.objects.create(identity=id)
 
 manifest = Manifest({
     '': '/landing',
@@ -91,7 +90,7 @@ manifest = Manifest({
         'item': [
             AuthenticationRequiredProgram(
                 controllers=['http-get'],
-                model=[Item.get],
+                model=[],
                 view=BasicView(
                     html=jinja_template('single_item.html'),
                 ),

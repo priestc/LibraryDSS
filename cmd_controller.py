@@ -10,6 +10,9 @@ import secrets
 import machine
 initialize(config, secrets, machine)
 
+import os
+os.environ["DJANGO_SETTINGS_MODULE"] = "config"
+
 from manifest import manifest
 
 args = sys.argv

@@ -23,4 +23,9 @@ $(function() {
     });
 
     $('form.engine_details input').keyup(show_submit_button).change(show_submit_button);
+
+    $('#add_s3_link').click(function() {
+        $("#s3_popup").dialog({title: "Add S3", width: '400px'});
+        return false;
+    });
 });
