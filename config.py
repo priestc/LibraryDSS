@@ -7,7 +7,11 @@ dropbox_app_type = 'dropbox'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'mydatabase'
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'libraries',                      
+        'USER': 'chris',
+        'PASSWORD': 'spatula',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }

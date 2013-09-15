@@ -1,23 +1,24 @@
 import httplib2
 
-from models import Library, StorageEngine, Item, MetaData, Connection
+from library import Library, Item, MetaData
+from storage_engines import StorageEngine
+from connections import Connection
+
 from giotto.primitives import ALL_DATA, USER, LOGGED_IN_USER
 from giotto.exceptions import NotAuthorized
 from giotto.utils import jsonify
 from giotto import get_config
 
 from apiclient.discovery import build
-from giotto_google.models import get_google_flow
-from giotto_dropbox.models import get_dropbox_authorize_url
-from giotto_s3 import get_bucket_name
+from googledrive.models import get_google_flow
+from dropbox.models import get_dropbox_authorize_url
+from aws import get_bucket_name
 from giotto.control import Redirection
 from utils import sizeof_fmt
 
-from sqlalchemy import func
-
 def addS3(secret_key, access_token, user=LOGGED_IN_USER):
     bucket_name = get_bucket_name(user.username, get_config('domain'), access_token, secret_key)
-    library = Library.get(username=user.username)
+    library = Library.objects.get(username=user.username)
     library.add_storage('s3', {
         'aws_key': access_token,
         'aws_secret': secret_key,
@@ -29,7 +30,7 @@ def execute_query(query):
     return "foo"
 
 def show_connections(user=LOGGED_IN_USER):
-    library = Library.get(username=user.username)
+    library = Library.objects.get(username=user.username)
     conns = library.connections
     return {
         'site_domain': get_config('domain'),
@@ -39,7 +40,7 @@ def show_connections(user=LOGGED_IN_USER):
     }
 
 def connection_submit(identity, request_auth=False, user=LOGGED_IN_USER, filter_query=None, request_query=None, request_message=None):
-    library = Library.get(username=user.username)
+    library = Library.objects.get(username=user.username)
     library.connection_details(
         identity=identity,
         filter_query=filter_query,
@@ -49,24 +50,21 @@ def connection_submit(identity, request_auth=False, user=LOGGED_IN_USER, filter_
     )
 
 def accept_connection_request(connection_id, user=LOGGED_IN_USER):
-    session = get_config('db_session')
-    connection = session.query(Connection).get(connection_id)
+    connection = Connection.objects.get(id=connection_id)
     connection.pending = False
-    session.add(connection)
-    session.commit()
+    connection.save()
 
 def request_authorization(target_identity, requesting_identity, requesting_token, request_message, request_query=None):
     """
     Called by other people who wish to connect with me.
     """
-    library = Library.get(identity=target_identity)
+    library = Library.objects.get(identity=target_identity)
     Connection.create_pending_connection(library, requesting_identity, requesting_token, request_message, request_query)
     return "OK"
 
 def home(user=LOGGED_IN_USER):
-    session = get_config('db_session')
-    library_count = session.query(Library).count()
-    item_count = session.query(Item).count() or 0
+    library_count = Library.objects.count()
+    item_count = Item.objects.count()
     total_size = 0 #session.query(func.sum(Item.size))[0][0] or 0
     return {
         'user': user,
@@ -78,12 +76,11 @@ def home(user=LOGGED_IN_USER):
 def dashboard(user=LOGGED_IN_USER):
     session = get_config('db_session')
     identity = "%s@%s" % (user.username, get_config('domain'))
-    conns = session.query(Connection)\
-                   .filter(Library.identity==identity)\
-                   .order_by(Connection.date_created.desc())
-    pubs = session.query(Item)\
-                  .filter(Library.identity==identity)\
-                  .order_by(Item.date_published.desc())
+
+    conns = Connection.objects.filter(library__identity=identity)\
+                      .order("date_created")
+    pubs = Item.objects.filter(identity=identity)\
+                       .order('date_published')
     return {
         'latest_connections': conns,
         'latest_publications': pubs,
@@ -94,7 +91,7 @@ def start_publish(size, hash, username=USER):
     Based on the size and hash, determine which storage engine should get this
     new upload.
     """
-    library = Library.get(username=username)
+    library = Library.objects.get(username=username)
     return library.get_storage(size)
 
 def finish_publish(hash, metadata, engine_id=None, username=USER):
@@ -103,7 +100,7 @@ def finish_publish(hash, metadata, engine_id=None, username=USER):
     finish the publish process.
     """
     identity = "%s@%s" % (username, get_config('domain'))
-    library = Library.get(identity=identity)
+    library = Library.objects.get(identity=identity)
     library.add_item(
         engine_id=engine_id,
         origin=identity,
@@ -122,7 +119,7 @@ def items(query=None, user=LOGGED_IN_USER, username=USER):
     if not identity:
         raise NotAuthorized()
 
-    library = Library.get(identity=identity)
+    library = Library.objects.get(identity=identity)
     session = get_config('db_session')
     items = session.query(Item).join(MetaData).filter(Item.library==library)
     query_json = '[]'

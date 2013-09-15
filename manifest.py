@@ -12,8 +12,8 @@ from giotto import get_config
 from models import client
 from models import server
 
-from giotto_dropbox.manifest import make_dropbox_manifest
-from giotto_google.manifest import make_google_manifest
+from models.dropbox.manifest import make_dropbox_manifest
+from models.googledrive.manifest import make_google_manifest
 
 from models.third_party_callbacks import dropbox_api_callback, google_api_callback
 

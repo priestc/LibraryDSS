@@ -1,13 +1,13 @@
 import os
 from dropbox import client
-from giotto_dropbox.models import get_dropbox_session
+from models import get_dropbox_session
 
 import logging
-logger = logging.getLogger('dropbox.upload')
 
 def upload(filename, endfilename, access_token):
-    logger.info('Commencing upload to Dropbox')
-    print "Upload to Dropbox"
+    logging.info('Commencing upload to Dropbox')
+    print("Upload to Dropbox")
+    
     sess = get_dropbox_session(
         token_key=access_token['key'],
         token_secret=access_token['secret'],
