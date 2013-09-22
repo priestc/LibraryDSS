@@ -10,7 +10,7 @@ import logging
 from giotto.primitives import ALL_DATA
 
 from aws.upload import upload as upload_s3
-from dropbox.upload import upload as upload_dropbox
+from gio_dropbox.upload import upload as upload_dropbox
 from googledrive.upload import upload as upload_google_drive
 from giotto import get_config
 

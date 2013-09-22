@@ -4,7 +4,6 @@ from django.db import models
 from library import Library
 
 class StorageEngine(models.Model):
-    library = models.ForeignKey(Library)
     name = models.CharField(max_length=128)
     retired = models.BooleanField()
     connection_data = models.TextField()

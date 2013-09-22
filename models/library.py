@@ -24,15 +24,11 @@ from LQL import Query
 
 IMMUTABLE_BUILT_IN = ['origin', 'date_published']
 
-class Library(models.Model):
-    identity = models.CharField(primary_key=True, max_length=256)
+class Library(object):
+    #identity = models.CharField(primary_key=True, max_length=256)
 
     def __unicode__(self):
         return "%s (%s)" % (self.identity, self.item_set.count())
-
-    def all_values_for_key(self, user, key):
-        q = session.query(MetaData.value).filter(key=key)
-        return q.all()
 
     def connection_details(self, identity, **kwargs):
         """
@@ -60,16 +56,6 @@ class Library(models.Model):
             conn.filter_query = filter_query
             conn.save()
 
-    @classmethod
-    def get(cls, identity=None, username=None):
-        """
-        Get Library by identity.
-        """
-        if not identity:
-            identity = "%s@%s" % (username, get_config('domain'))
-
-        return cls.objects.get(identity)
-
     def has(self, size=None, hash=None):
         """
         Does this size/hash pair exist in my library?
@@ -83,18 +69,6 @@ class Library(models.Model):
             )
 
         return len(items.all()) > 0
-
-    def all_keys(self):
-        """
-        Return a list of all keys that are used in describing the library items
-        in this library. FIXME: have this be one db query.
-        """
-        keys = set()
-        for item in self.items:
-            k = set(item.keys())
-            keys = keys.union(k)
-
-        return keys
 
     def get_storage(self, size):
         x = self.engines
@@ -133,9 +107,7 @@ class Library(models.Model):
         i.save()
 
 class Item(models.Model):
-    library = models.ForeignKey(Library)
     storage_engine = models.ForeignKey('StorageEngine')
-
     origin = models.CharField(max_length=256, null=False, blank=False)
     date_published = models.DateTimeField()
 
@@ -227,6 +199,9 @@ class MetaData(models.Model):
     date_value = models.DateTimeField()
     num_value = models.FloatField()
     item = models.ForeignKey('Item')
+
+    class Meta:
+        app_label = 'dss'
 
     def __repr__(self):
         return "[id=%s] %s=%s" % (self.item.hash[:5]+ '...', self.key, self.value)

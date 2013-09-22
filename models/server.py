@@ -11,7 +11,7 @@ from giotto import get_config
 
 from apiclient.discovery import build
 from googledrive.models import get_google_flow
-from dropbox.models import get_dropbox_authorize_url
+from gio_dropbox.models import get_dropbox_authorize_url
 from aws import get_bucket_name
 from giotto.control import Redirection
 from utils import sizeof_fmt
@@ -30,8 +30,7 @@ def execute_query(query):
     return "foo"
 
 def show_connections(user=LOGGED_IN_USER):
-    library = Library.objects.get(username=user.username)
-    conns = library.connections
+    conns = Connection.objects.all()
     return {
         'site_domain': get_config('domain'),
         'username': user.username,
@@ -74,13 +73,8 @@ def home(user=LOGGED_IN_USER):
     }
 
 def dashboard(user=LOGGED_IN_USER):
-    session = get_config('db_session')
-    identity = "%s@%s" % (user.username, get_config('domain'))
-
-    conns = Connection.objects.filter(library__identity=identity)\
-                      .order("date_created")
-    pubs = Item.objects.filter(identity=identity)\
-                       .order('date_published')
+    conns = Connection.objects.order_by("date_created")
+    pubs = Item.objects.order_by('date_published')
     return {
         'latest_connections': conns,
         'latest_publications': pubs,
@@ -112,16 +106,8 @@ def items(query=None, user=LOGGED_IN_USER, username=USER):
     """
     Given an LQL query and a library identity, return the items that match.
     """
-    # in the case of an authenticated request through the browser;
-    # no 'identity' will be sent, so just go by username.
-    identity = "%s@%s" % (user.username or username, get_config('domain'))
-
-    if not identity:
-        raise NotAuthorized()
-
-    library = Library.objects.get(identity=identity)
-    session = get_config('db_session')
-    items = session.query(Item).join(MetaData).filter(Item.library==library)
+    library = Library.objects.get()
+    items = Item.objects.all()
     query_json = '[]'
 
     if query:
@@ -135,17 +121,16 @@ def items(query=None, user=LOGGED_IN_USER, username=USER):
         query_json = jsonify(parsed)
 
     items = items.all()
-
+    all_keys = []
     return {
         'parsed_query_json': query_json,
         'library_items': items,
         'items_count': len(items),
-        'keys': library.all_keys(),
+        'keys': all_keys,
     }
 
 def engine_dashboard(user=LOGGED_IN_USER):
-    library = Library.get(username=user.username)
-    names = [x.name for x in library.storage_engines]
+    names = [x.name for x in StorageEngine.objects.all()]
     
     google_drive_url = None
     if 'googledrive' not in names:

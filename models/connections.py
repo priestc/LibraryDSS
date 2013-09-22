@@ -7,7 +7,6 @@ class Connection(models.Model):
     """
     Represents a set of files that get shared between two libraries.
     """
-    library = models.ForeignKey('Library')
     identity = models.CharField(max_length=256) # full identity of connecting library (username@domain).
     #filter_query = PickledObjectField() # the query object that defines the files
     my_auth_token = models.CharField(max_length=32) # whoever is in possession of this token can access this connection

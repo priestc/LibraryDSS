@@ -8,12 +8,9 @@ from giotto.primitives import LOGGED_IN_USER
 from django.db import models
 
 from dropbox import session as dropbox_session
-
-Base = get_config("Base")
-
 class DropboxRequestToken(models.Model):
     """
-    Table for storing request token as part of th authentication process.
+    Table for storing request token as part of the authentication process.
     """
     user = models.ForeignKey(User, primary_key=True)
     secret = models.CharField(max_length=128)
@@ -21,12 +18,8 @@ class DropboxRequestToken(models.Model):
 
     @classmethod
     def create(cls, user, token):
-        session = get_config("db_session")
-        session.query(cls).filter(cls.user==user).delete()
-        self = cls(user=user, secret=token.secret, key=token.key)
-        session.add(self)
-        session.commit()
-        return self
+        cls.objects.filter(user=user).delete()
+        return cls.objects.create(user=user, secret=token.secret, key=token.key)
 
     @classmethod
     def get(cls, user):
@@ -34,9 +27,8 @@ class DropboxRequestToken(models.Model):
         This function should only be called after the user has clicked on the
         authorize URL and has confirmed the authorization.
         """
-        s = get_config("db_session")
-        ret = s.query(cls).filter(cls.user==user).first()
-        return dropbox_session.OAuthToken(key=ret.key, secret=ret.secret)
+        token = cls.objects.get(user=user)
+        return dropbox_session.OAuthToken(key=token.key, secret=token.secret)
 
 def make_callback_model(callback):
     """

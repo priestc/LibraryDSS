@@ -3,13 +3,12 @@
 
 import argparse
 import sys
-from giotto import initialize
+from giotto import initialize, get_config
 
 import config
 import secrets
 import machine
 initialize(config, secrets, machine)
-from giotto import get_config
 
 from manifest import manifest
 
