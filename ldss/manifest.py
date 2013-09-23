@@ -8,9 +8,9 @@ from giotto.contrib.static.programs import StaticServe
 from giotto.primitives import LOGGED_IN_USER
 from giotto import get_config
 
-from models import Item, Library, configure
-import client
-import server
+from models.library import Item, Library, configure
+from models import client
+from models import server
 
 from giotto_dropbox.manifest import make_dropbox_manifest
 from giotto_google.manifest import make_google_manifest
@@ -27,15 +27,6 @@ class AuthenticationRequiredProgram(Program):
 
 class AuthenticationProgram(Program):
     pre_input_middleware = [AuthenticationMiddleware]
-
-def post_register_callback(user):
-    """
-    After a new user signs up, create a Library for them.
-    """
-    session = get_config('db_session')
-    l = Library(identity="%s@%s" % (user.username, get_config('domain')))
-    session.add(l)
-    session.commit()
 
 manifest = Manifest({
     '': '/landing',
@@ -63,9 +54,7 @@ manifest = Manifest({
             ),
         )
     }),
-    'auth': create_auth_manifest(
-        post_register_callback=post_register_callback,
-    ),
+    'auth': create_auth_manifest(),
     'backup': Program(
         model=[server.backup],
         view=ForceJSONView

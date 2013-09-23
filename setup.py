@@ -17,6 +17,7 @@ setup(
     ],
     install_requires=[
         'giotto==0.11.0',
+        'python-dateutil==1.5',
         'psycopg2',
         'iso8601',
         'boto',
