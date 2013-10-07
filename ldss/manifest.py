@@ -8,7 +8,7 @@ from giotto.contrib.static.programs import StaticServe
 from giotto.primitives import LOGGED_IN_USER
 from giotto import get_config
 
-from models.library import Item, Library, configure
+from models.library import Item, Library
 from models import client
 from models import server
 

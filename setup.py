@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='ldss',
@@ -8,7 +8,7 @@ setup(
     author='',
     author_email='',
     url='',
-    packages=['ldss', 'ldss.controllers', 'ldss.models', 'ldss.views'],
+    packages=find_packages(),
     include_package_data=True,
     license='LICENSE',
     classifiers=[
