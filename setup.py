@@ -8,15 +8,19 @@ setup(
     author='',
     author_email='',
     url='',
-    packages=['ldss'],
+    packages=['ldss', 'ldss.controllers', 'ldss.models', 'ldss.views'],
     include_package_data=True,
     license='LICENSE',
     classifiers=[
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
+    dependency_links=[
+        "https://github.com/priestc/python-lql/tarball/master#egg=python-lql-0.1.0"
+    ],
     install_requires=[
         'giotto==0.11.0',
+        'python-lql',
         'python-dateutil==1.5',
         'psycopg2',
         'iso8601',
