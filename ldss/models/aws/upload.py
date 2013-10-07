@@ -8,7 +8,7 @@ import os
 
 from boto.s3.connection import S3Connection
 from filechunkio import FileChunkIO
-from models.utils import sizeof_fmt
+from ldss.models.utils import sizeof_fmt
 
 def _upload_part(bucketname, aws_key, aws_secret, multipart_id, part_num, total_parts, source_path, offset, bytes, amount_of_retries=10):
     """

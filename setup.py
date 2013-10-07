@@ -19,7 +19,7 @@ setup(
         "https://github.com/priestc/python-lql/tarball/master#egg=python-lql-0.1.0"
     ],
     install_requires=[
-        'giotto==0.11.0',
+        #'giotto==0.11.0',
         'python-lql',
         'python-dateutil==1.5',
         'psycopg2',

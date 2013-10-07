@@ -18,7 +18,6 @@ from utils import sizeof_fmt
 
 def addS3(secret_key, access_token, user=LOGGED_IN_USER):
     bucket_name = get_bucket_name(user.username, get_config('domain'), access_token, secret_key)
-    library = Library.objects.get(username=user.username)
     library.add_storage('s3', {
         'aws_key': access_token,
         'aws_secret': secret_key,
@@ -62,12 +61,10 @@ def request_authorization(target_identity, requesting_identity, requesting_token
     return "OK"
 
 def home(user=LOGGED_IN_USER):
-    library_count = Library.objects.count()
     item_count = Item.objects.count()
     total_size = 0 #session.query(func.sum(Item.size))[0][0] or 0
     return {
         'user': user,
-        'library_count': library_count,
         'item_count': item_count,
         'total_size': sizeof_fmt(total_size)
     }

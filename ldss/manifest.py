@@ -12,10 +12,10 @@ from models.library import Item, Library
 from models import client
 from models import server
 
-from giotto_dropbox.manifest import make_dropbox_manifest
-from giotto_google.manifest import make_google_manifest
+from ldss.models.gio_dropbox.manifest import make_dropbox_manifest
+from ldss.models.googledrive.manifest import make_google_manifest
 
-from third_party_callbacks import dropbox_api_callback, google_api_callback
+from ldss.models.third_party_callbacks import dropbox_api_callback, google_api_callback
 
 def test_wrapper():
     from test import functional_test
